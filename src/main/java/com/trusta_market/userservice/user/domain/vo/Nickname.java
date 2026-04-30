@@ -1,20 +1,20 @@
 package com.trusta_market.userservice.user.domain.vo;
 
+import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+
 public record Nickname(String value) {
 
     private static final int MIN_LENGTH = 2;
     private static final int MAX_LENGTH = 100;
 
     public Nickname {
-        if (value == null) {
-            throw new IllegalArgumentException("nickname?? ?熬곣뫖????낅퉵??");
+        if (value == null || value.trim().isBlank()) {
+            throw new DomainException(UserErrorCode.INVALID_NICKNAME_FORMAT);
         }
         String normalized = value.trim();
-        if (normalized.isBlank()) {
-            throw new IllegalArgumentException("nickname?? ?熬곣뫖????낅퉵??");
-        }
         if (normalized.length() < MIN_LENGTH || normalized.length() > MAX_LENGTH) {
-            throw new IllegalArgumentException("nickname?? %d????怨대쭜 %d????袁⑤┃??????紐껊퉵??".formatted(MIN_LENGTH, MAX_LENGTH));
+            throw new DomainException(UserErrorCode.INVALID_NICKNAME_FORMAT);
         }
         value = normalized;
     }

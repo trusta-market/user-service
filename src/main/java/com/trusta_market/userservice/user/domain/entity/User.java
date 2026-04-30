@@ -1,17 +1,24 @@
 package com.trusta_market.userservice.user.domain.entity;
 
-import com.trusta_market.userservice.common.domain.entity.BaseUserEntity;
+import com.trustamarket.common.domain.BaseUserEntity;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Membership;
 import com.trusta_market.userservice.user.domain.vo.Nickname;
 import com.trusta_market.userservice.user.domain.vo.Realname;
 import com.trusta_market.userservice.user.domain.vo.Role;
+import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
+import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NicknameConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.RealnameConverter;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -19,7 +26,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
@@ -30,22 +36,24 @@ import java.util.UUID;
 public class User extends BaseUserEntity {
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
+    @Convert(converter = UserIdConverter.class)
     @Column(nullable = false, updatable = false)
-    private UUID userId;
+    private UserId userId;
 
     @Column(nullable = false, unique = true, updatable = false, length = 100)
     private String keycloakId;
 
+    @Convert(converter = EmailConverter.class)
     @Column(nullable = false, unique = true, length = 100)
-    private String email;
+    private Email email;
 
+    @Convert(converter = RealnameConverter.class)
     @Column(nullable = false, length = 100)
-    private String realname;
+    private Realname realname;
 
+    @Convert(converter = NicknameConverter.class)
     @Column(nullable = false, unique = true, length = 100)
-    private String nickname;
+    private Nickname nickname;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -67,11 +75,11 @@ public class User extends BaseUserEntity {
     private Integer version;
 
     @Builder
-    public User(UUID userId,
+    public User(UserId userId,
                 String keycloakId,
-                String email,
-                String realname,
-                String nickname,
+                Email email,
+                Realname realname,
+                Nickname nickname,
                 Role role,
                 UserStatus userStatus,
                 Membership membership,
@@ -91,35 +99,65 @@ public class User extends BaseUserEntity {
 
     public static User create(String keycloakId, Email email, Realname realname, Nickname nickname) {
         return User.builder()
+                .userId(UserId.of(UUID.randomUUID()))
                 .keycloakId(keycloakId)
-                .email(email.value())
-                .realname(realname.value())
-                .nickname(nickname.value())
+                .email(email)
+                .realname(realname)
+                .nickname(nickname)
                 .build();
     }
 
     public void updateProfile(Nickname nickname, Realname realname) {
         if (nickname != null) {
-            this.nickname = nickname.value();
+            this.nickname = nickname;
         }
         if (realname != null) {
-            this.realname = realname.value();
+            this.realname = realname;
         }
     }
 
+    public void withdraw(UUID userId) {
+        if (isDeleted()) {
+            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+        }
+        super.delete(userId);
+    }
+
     public void approve() {
+        checkNotWithdrawn();
+        if (this.userStatus != UserStatus.PENDING) {
+            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+        }
         this.userStatus = UserStatus.APPROVED;
     }
 
     public void reject() {
+        checkNotWithdrawn();
+        if (this.userStatus != UserStatus.PENDING) {
+            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+        }
         this.userStatus = UserStatus.REJECTED;
     }
 
     public void suspend() {
+        checkNotWithdrawn();
+        if (this.userStatus == UserStatus.SUSPENDED) {
+            throw new DomainException(UserErrorCode.SUSPENDED_USER);
+        }
         this.userStatus = UserStatus.SUSPENDED;
     }
 
     public void unsuspend() {
+        checkNotWithdrawn();
+        if (this.userStatus != UserStatus.SUSPENDED) {
+            throw new DomainException(UserErrorCode.USER_NOT_FOUND);
+        }
         this.userStatus = UserStatus.APPROVED;
+    }
+
+    private void checkNotWithdrawn() {
+        if (isDeleted()) {
+            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+        }
     }
 }

@@ -4,18 +4,21 @@ import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
 import com.trusta_market.userservice.user.domain.repository.UserRepository;
+import com.trusta_market.userservice.user.domain.pagination.DomainPage;
+import com.trusta_market.userservice.user.domain.pagination.DomainPageRequest;
+import com.trusta_market.userservice.user.domain.vo.Email;
+import com.trusta_market.userservice.user.domain.vo.Nickname;
+import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.support.PageableExecutionUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.trusta_market.userservice.user.domain.entity.QUser.user;
 
@@ -36,57 +39,61 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID userId) {
+    public Optional<User> findById(UserId userId) {
         return userJpaRepository.findById(userId);
     }
 
     @Override
     public Optional<User> findByKeycloakId(String keycloakId) {
-        return userJpaRepository.findByKeycloakId(keycloakId);
+        return userJpaRepository.findByKeycloakIdAndDeletedAtIsNull(keycloakId);
     }
 
     @Override
-    public Optional<User> findByEmailAndDeletedAtIsNull(String email) {
+    public Optional<User> findByEmail(Email email) {
         return userJpaRepository.findByEmailAndDeletedAtIsNull(email);
     }
 
     @Override
-    public Optional<User> findByNicknameAndDeletedAtIsNull(String nickname) {
+    public Optional<User> findByNickname(Nickname nickname) {
         return userJpaRepository.findByNicknameAndDeletedAtIsNull(nickname);
     }
 
     @Override
-    public boolean existsByEmailAndDeletedAtIsNull(String email) {
+    public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmailAndDeletedAtIsNull(email);
     }
 
     @Override
-    public boolean existsByNicknameAndDeletedAtIsNull(String nickname) {
+    public boolean existsByNickname(Nickname nickname) {
         return userJpaRepository.existsByNicknameAndDeletedAtIsNull(nickname);
     }
 
     @Override
-    public Page<User> findAllByDeletedAtIsNull(Pageable pageable) {
-        return userJpaRepository.findAllByDeletedAtIsNull(pageable);
+    public DomainPage<User> findAllActiveUsers(DomainPageRequest pageRequest) {
+        Page<User> page = userJpaRepository.findAllByDeletedAtIsNull(PageRequest.of(pageRequest.page(), pageRequest.size()));
+        return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     @Override
-    public Page<User> findAllByDeletedAtIsNullAndUserStatus(Pageable pageable, UserStatus userStatus) {
-        return userJpaRepository.findAllByDeletedAtIsNullAndUserStatus(pageable, userStatus);
+    public DomainPage<User> findAllActiveUsersByStatus(DomainPageRequest pageRequest, UserStatus userStatus) {
+        Page<User> page = userJpaRepository.findAllByDeletedAtIsNullAndUserStatus(PageRequest.of(pageRequest.page(), pageRequest.size()), userStatus);
+        return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     @Override
-    public Page<User> findAllByDeletedAtIsNullAndRole(Pageable pageable, Role role) {
-        return userJpaRepository.findAllByDeletedAtIsNullAndRole(pageable, role);
+    public DomainPage<User> findAllActiveUsersByRole(DomainPageRequest pageRequest, Role role) {
+        Page<User> page = userJpaRepository.findAllByDeletedAtIsNullAndRole(PageRequest.of(pageRequest.page(), pageRequest.size()), role);
+        return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     @Override
-    public Page<User> findAllByDeletedAtIsNullAndUserStatusAndRole(Pageable pageable, UserStatus userStatus, Role role) {
-        return userJpaRepository.findAllByDeletedAtIsNullAndUserStatusAndRole(pageable, userStatus, role);
+    public DomainPage<User> findAllActiveUsersByStatusAndRole(DomainPageRequest pageRequest, UserStatus userStatus, Role role) {
+        Page<User> page = userJpaRepository.findAllByDeletedAtIsNullAndUserStatusAndRole(PageRequest.of(pageRequest.page(), pageRequest.size()), userStatus, role);
+        return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
     @Override
-    public List<User> findAllByUserIdInAndDeletedAtIsNull(Collection<UUID> userIds) {
+    public List<User> findAllActiveUsersByIds(Collection<UserId> userIds) {
         return userJpaRepository.findAllByUserIdInAndDeletedAtIsNull(userIds);
     }
 }

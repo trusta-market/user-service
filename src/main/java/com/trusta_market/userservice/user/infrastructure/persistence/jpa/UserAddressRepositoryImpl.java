@@ -2,12 +2,13 @@ package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
 import com.trusta_market.userservice.user.domain.repository.UserAddressRepository;
+import com.trusta_market.userservice.user.domain.vo.AddressId;
+import com.trusta_market.userservice.user.domain.vo.UserId;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public class UserAddressRepositoryImpl implements UserAddressRepository {
@@ -24,34 +25,34 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
     }
 
     @Override
-    public Optional<UserAddress> findById(UUID addressId) {
+    public Optional<UserAddress> findById(AddressId addressId) {
         return userAddressJpaRepository.findById(addressId);
     }
 
     @Override
-    public List<UserAddress> findAllByUserIdAndDeletedAtIsNull(UUID userId) {
+    public List<UserAddress> findAllActiveAddressesByUserId(UserId userId) {
         return userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNull(userId);
     }
 
     @Override
-    public long countByUserIdAndDeletedAtIsNull(UUID userId) {
+    public long countActiveAddressesByUserId(UserId userId) {
         return userAddressJpaRepository.countByUserIdAndDeletedAtIsNull(userId);
     }
 
     @Override
-    public Optional<UserAddress> findByAddressIdAndUserIdAndDeletedAtIsNull(UUID addressId, UUID userId) {
+    public Optional<UserAddress> findActiveAddressByIdAndUserId(AddressId addressId, UserId userId) {
         return userAddressJpaRepository.findByAddressIdAndUserIdAndDeletedAtIsNull(addressId, userId);
     }
 
     @Override
-    public Optional<UserAddress> findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(UUID userId) {
+    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
         return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
     }
 
     @Transactional
     @Override
-    public void clearDefaultAddress(UUID userId) {
-        userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId)
-                .ifPresent(address -> address.setDefault(false));
+    public void clearDefaultAddress(UserId userId) {
+        userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNullAndIsDefaultTrue(userId)
+                .forEach(address -> address.unmarkDefaultAddress());
     }
 }

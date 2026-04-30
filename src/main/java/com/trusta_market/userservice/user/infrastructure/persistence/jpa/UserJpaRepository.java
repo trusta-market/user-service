@@ -7,22 +7,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.trusta_market.userservice.user.domain.vo.Email;
+import com.trusta_market.userservice.user.domain.vo.Nickname;
+import com.trusta_market.userservice.user.domain.vo.UserId;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-public interface UserJpaRepository extends JpaRepository<User, UUID> {
+public interface UserJpaRepository extends JpaRepository<User, UserId> {
 
-    Optional<User> findByKeycloakId(String keycloakId);
+    Optional<User> findByKeycloakIdAndDeletedAtIsNull(String keycloakId);
 
-    Optional<User> findByEmailAndDeletedAtIsNull(String email);
+    Optional<User> findByEmailAndDeletedAtIsNull(Email email);
 
-    Optional<User> findByNicknameAndDeletedAtIsNull(String nickname);
+    Optional<User> findByNicknameAndDeletedAtIsNull(Nickname nickname);
 
-    boolean existsByEmailAndDeletedAtIsNull(String email);
+    boolean existsByEmailAndDeletedAtIsNull(Email email);
 
-    boolean existsByNicknameAndDeletedAtIsNull(String nickname);
+    boolean existsByNicknameAndDeletedAtIsNull(Nickname nickname);
 
     Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 
@@ -32,5 +35,5 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     Page<User> findAllByDeletedAtIsNullAndUserStatusAndRole(Pageable pageable, UserStatus userStatus, Role role);
 
-    List<User> findAllByUserIdInAndDeletedAtIsNull(Collection<UUID> userIds);
+    List<User> findAllByUserIdInAndDeletedAtIsNull(Collection<UserId> userIds);
 }

@@ -1,6 +1,6 @@
 package com.trusta_market.userservice.user.domain.entity;
 
-import com.trusta_market.userservice.common.domain.entity.BaseCreatedEntity;
+import com.trustamarket.common.domain.BaseCreatedEntity;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
