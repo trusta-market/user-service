@@ -2,16 +2,24 @@ package com.trusta_market.userservice.user.domain.repository;
 
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
 
+import com.trusta_market.userservice.user.domain.vo.AddressId;
+import com.trusta_market.userservice.user.domain.vo.UserId;
+
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface UserAddressRepository {
     UserAddress save(UserAddress address);
-    Optional<UserAddress> findById(UUID addressId);
-    List<UserAddress> findAllByUserIdAndDeletedAtIsNull(UUID userId);
-    long countByUserIdAndDeletedAtIsNull(UUID userId);
-    Optional<UserAddress> findByAddressIdAndUserIdAndDeletedAtIsNull(UUID addressId, UUID userId);
-    Optional<UserAddress> findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(UUID userId);
-    void clearDefaultAddress(UUID userId);
+
+    Optional<UserAddress> findById(AddressId addressId);
+
+    List<UserAddress> findAllActiveAddressesByUserId(UserId userId);
+
+    long countActiveAddressesByUserId(UserId userId);
+
+    Optional<UserAddress> findActiveAddressByIdAndUserId(AddressId addressId, UserId userId);
+
+    Optional<UserAddress> findDefaultAddressByUserId(UserId userId);
+
+    void clearDefaultAddress(UserId userId);
 }

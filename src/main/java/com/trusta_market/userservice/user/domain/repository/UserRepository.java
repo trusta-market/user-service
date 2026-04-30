@@ -3,49 +3,51 @@ package com.trusta_market.userservice.user.domain.repository;
 import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.trusta_market.userservice.user.domain.pagination.DomainPage;
+import com.trusta_market.userservice.user.domain.pagination.DomainPageRequest;
+import com.trusta_market.userservice.user.domain.vo.Email;
+import com.trusta_market.userservice.user.domain.vo.Nickname;
+import com.trusta_market.userservice.user.domain.vo.UserId;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public interface UserRepository {
 
-    // ?????? ???繞③뇡??
+    // 유저 저장
     User save(User user);
 
-    // ?????ID???????? ?브퀗????類ｋ펲.
-    Optional<User> findById(UUID userId);
+    // 식별자로 유저 조회
+    Optional<User> findById(UserId userId);
 
-    // Keycloak ID???????? ?브퀗????類ｋ펲.
+    // Keycloak ID로 유저 조회
     Optional<User> findByKeycloakId(String keycloakId);
 
-    // ?????? ??? ???筌???リ옇?? ?????? ?브퀗????類ｋ펲.
-    Optional<User> findByEmailAndDeletedAtIsNull(String email);
+    // 이메일로 유저 조회
+    Optional<User> findByEmail(Email email);
 
-    // ?????? ??? ??怨뚰맟???リ옇?? ?????? ?브퀗????類ｋ펲.
-    Optional<User> findByNicknameAndDeletedAtIsNull(String nickname);
+    // 닉네임으로 유저 조회
+    Optional<User> findByNickname(Nickname nickname);
 
-    // ?????? ??? ???筌???브퀡?????????筌먦끉逾??類ｋ펲.
-    boolean existsByEmailAndDeletedAtIsNull(String email);
+    // 이메일 중복 확인
+    boolean existsByEmail(Email email);
 
-    // ?????? ??? ??怨뚰맟???브퀡?????????筌먦끉逾??類ｋ펲.
-    boolean existsByNicknameAndDeletedAtIsNull(String nickname);
+    // 닉네임 중복 확인
+    boolean existsByNickname(Nickname nickname);
 
-    // ?????? ??? ?????嶺뚮ㅄ維뽨빳????瑜곷턄嶺뚯솘????브퀗????類ｋ펲.
-    Page<User> findAllByDeletedAtIsNull(Pageable pageable);
+    // 활성 유저 페이징 조회
+    DomainPage<User> findAllActiveUsers(DomainPageRequest pageRequest);
 
-    // ??⑤객臾??브퀗?쀦뤃????????????嶺뚮ㅄ維뽨빳????瑜곷턄嶺뚯솘????브퀗????類ｋ펲.
-    Page<User> findAllByDeletedAtIsNullAndUserStatus(Pageable pageable, UserStatus userStatus);
+    // 상태별 활성 유저 페이징 조회
+    DomainPage<User> findAllActiveUsersByStatus(DomainPageRequest pageRequest, UserStatus userStatus);
 
-    // ?????브퀗?쀦뤃????????????嶺뚮ㅄ維뽨빳????瑜곷턄嶺뚯솘????브퀗????類ｋ펲.
-    Page<User> findAllByDeletedAtIsNullAndRole(Pageable pageable, Role role);
+    // 역할별 활성 유저 페이징 조회
+    DomainPage<User> findAllActiveUsersByRole(DomainPageRequest pageRequest, Role role);
 
-    // ??⑤객臾?? ?????브퀗?쀦뤃?????덈뻣????⑤챷????????嶺뚮ㅄ維뽨빳????瑜곷턄嶺뚯솘????브퀗????類ｋ펲.
-    Page<User> findAllByDeletedAtIsNullAndUserStatusAndRole(Pageable pageable, UserStatus userStatus, Role role);
+    // 상태 및 역할별 활성 유저 페이징 조회
+    DomainPage<User> findAllActiveUsersByStatusAndRole(DomainPageRequest pageRequest, UserStatus userStatus, Role role);
 
-    // ?????????ID????????濡ル츎 ?????? ?브퀗????類ｋ펲.
-    List<User> findAllByUserIdInAndDeletedAtIsNull(Collection<UUID> userIds);
+    // 다중 식별자로 활성 유저 목록 조회
+    List<User> findAllActiveUsersByIds(Collection<UserId> userIds);
 }
