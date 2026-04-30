@@ -1,5 +1,8 @@
 package com.trusta_market.userservice.user.domain.pagination;
 
+import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+
 import java.util.List;
 import java.util.function.Function;
 
@@ -10,6 +13,15 @@ public record DomainPage<T>(
         long totalElements,
         int totalPages
 ) {
+    public DomainPage {
+        if (content == null) {
+            throw new DomainException(UserErrorCode.INVALID_INPUT);
+        }
+        if (page < 0 || size < 0 || totalElements < 0 || totalPages < 0) {
+            throw new DomainException(UserErrorCode.INVALID_INPUT);
+        }
+        content = List.copyOf(content);
+    }
     public static <T> DomainPage<T> of(List<T> content, int page, int size, long totalElements) {
         int totalPages = size == 0 ? 1 : (int) Math.ceil((double) totalElements / (double) size);
         return new DomainPage<>(content, page, size, totalElements, totalPages);

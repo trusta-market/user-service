@@ -1,12 +1,15 @@
 package com.trusta_market.userservice.user.domain.pagination;
 
+import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+
 public record DomainPageRequest(int page, int size) {
     public DomainPageRequest {
         if (page < 0) {
-            throw new IllegalArgumentException("Page index must not be less than zero");
+            throw new DomainException(UserErrorCode.INVALID_INPUT);
         }
         if (size < 1) {
-            throw new IllegalArgumentException("Page size must not be less than one");
+            throw new DomainException(UserErrorCode.INVALID_INPUT);
         }
     }
 
