@@ -8,6 +8,7 @@ import com.trusta_market.userservice.user.domain.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Nickname;
 import com.trusta_market.userservice.user.domain.vo.UserId;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 
 import java.util.Collection;
 import java.util.List;
@@ -22,7 +23,7 @@ public interface UserRepository {
     Optional<User> findById(UserId userId);
 
     // Keycloak ID로 유저 조회
-    Optional<User> findByKeycloakId(String keycloakId);
+    Optional<User> findByKeycloakId(KeycloakId keycloakId);
 
     // 이메일로 유저 조회
     Optional<User> findByEmail(Email email);

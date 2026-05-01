@@ -9,6 +9,7 @@ import com.trusta_market.userservice.user.domain.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Nickname;
 import com.trusta_market.userservice.user.domain.vo.UserId;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -44,7 +45,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByKeycloakId(String keycloakId) {
+    public Optional<User> findByKeycloakId(KeycloakId keycloakId) {
         return userJpaRepository.findByKeycloakIdAndDeletedAtIsNull(keycloakId);
     }
 

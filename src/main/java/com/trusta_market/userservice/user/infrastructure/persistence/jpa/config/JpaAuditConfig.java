@@ -1,4 +1,4 @@
-package com.trusta_market.userservice.common.config;
+package com.trusta_market.userservice.user.infrastructure.persistence.jpa.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +21,17 @@ public class JpaAuditConfig {
             if (authentication == null || !authentication.isAuthenticated()) {
                 return Optional.empty();
             }
-            return Optional.empty();
+
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof com.trustamarket.common.config.security.UserDetailsImpl userDetails) {
+                return Optional.of(userDetails.getUuid());
+            }
+
+            try {
+                return Optional.of(UUID.fromString(authentication.getName()));
+            } catch (IllegalArgumentException e) {
+                return Optional.empty();
+            }
         };
     }
 }

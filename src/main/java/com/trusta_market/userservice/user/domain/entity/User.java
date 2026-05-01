@@ -14,6 +14,8 @@ import com.trusta_market.userservice.user.infrastructure.persistence.jpa.convert
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NicknameConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.RealnameConverter;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.KeycloakIdConverter;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -40,8 +42,9 @@ public class User extends BaseUserEntity {
     @Column(nullable = false, updatable = false)
     private UserId userId;
 
+    @Convert(converter = KeycloakIdConverter.class)
     @Column(nullable = false, unique = true, updatable = false, length = 100)
-    private String keycloakId;
+    private KeycloakId keycloakId;
 
     @Convert(converter = EmailConverter.class)
     @Column(nullable = false, unique = true, length = 100)
@@ -76,7 +79,7 @@ public class User extends BaseUserEntity {
 
     @Builder
     public User(UserId userId,
-                String keycloakId,
+                KeycloakId keycloakId,
                 Email email,
                 Realname realname,
                 Nickname nickname,
@@ -97,7 +100,7 @@ public class User extends BaseUserEntity {
         this.version = version;
     }
 
-    public static User create(String keycloakId, Email email, Realname realname, Nickname nickname) {
+    public static User create(KeycloakId keycloakId, Email email, Realname realname, Nickname nickname) {
         return User.builder()
                 .userId(UserId.of(UUID.randomUUID()))
                 .keycloakId(keycloakId)

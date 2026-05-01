@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Nickname;
 import com.trusta_market.userservice.user.domain.vo.UserId;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 public interface UserJpaRepository extends JpaRepository<User, UserId> {
 
-    Optional<User> findByKeycloakIdAndDeletedAtIsNull(String keycloakId);
+    Optional<User> findByKeycloakIdAndDeletedAtIsNull(KeycloakId keycloakId);
 
     Optional<User> findByEmailAndDeletedAtIsNull(Email email);
 
