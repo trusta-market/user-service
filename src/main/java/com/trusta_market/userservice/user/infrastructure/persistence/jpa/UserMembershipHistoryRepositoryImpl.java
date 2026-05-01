@@ -21,7 +21,6 @@ public class UserMembershipHistoryRepositoryImpl implements UserMembershipHistor
         return userMembershipHistoryJpaRepository.save(history);
     }
 
-    @Override
     public List<UserMembershipHistory> findAllByUserId(UUID userId) {
         return userMembershipHistoryJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }

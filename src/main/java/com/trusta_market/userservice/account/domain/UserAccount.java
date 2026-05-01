@@ -76,20 +76,24 @@ public class UserAccount extends BaseUserEntity {
         this.version = version;
     }
 
-    public static UserAccount create(UUID userId, String bankCode, String accountNumber, String accountHolder, AccountType accountType, boolean isVerified, boolean isDefault) {
+    public static UserAccount create(UUID userId, String bankCode, String accountNumber, String accountHolder, AccountType accountType, boolean isDefault, boolean isVerified) {
         return UserAccount.builder()
                 .userId(userId)
                 .bankCode(bankCode)
                 .accountNumber(accountNumber)
                 .accountHolder(accountHolder)
                 .accountType(accountType)
-                .isVerified(isVerified)
                 .isDefault(isDefault)
+                .isVerified(isVerified)
                 .build();
     }
 
-    public void setDefault(boolean value) {
-        this.isDefault = value;
+    public void markAsDefault() {
+        this.isDefault = true;
+    }
+
+    public void unmarkDefault() {
+        this.isDefault = false;
     }
 
     public void approve(UUID approvedBy) {

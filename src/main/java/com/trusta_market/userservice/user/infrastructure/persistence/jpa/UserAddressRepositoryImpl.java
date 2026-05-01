@@ -25,11 +25,6 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
     }
 
     @Override
-    public Optional<UserAddress> findById(AddressId addressId) {
-        return userAddressJpaRepository.findById(addressId);
-    }
-
-    @Override
     public List<UserAddress> findAllActiveAddressesByUserId(UserId userId) {
         return userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNull(userId);
     }
@@ -44,15 +39,19 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
         return userAddressJpaRepository.findByAddressIdAndUserIdAndDeletedAtIsNull(addressId, userId);
     }
 
-    @Override
-    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
-        return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
-    }
-
     @Transactional
     @Override
     public void clearDefaultAddress(UserId userId) {
         userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNullAndIsDefaultTrue(userId)
                 .forEach(address -> address.unmarkDefaultAddress());
+    }
+
+    // 인터페이스에 없는 메서드들이지만 필요하다면 남겨둘 수 있으나 @Override는 제거해야 함
+    public Optional<UserAddress> findById(AddressId addressId) {
+        return userAddressJpaRepository.findById(addressId);
+    }
+
+    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
+        return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
     }
 }

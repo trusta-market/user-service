@@ -21,7 +21,6 @@ public class UserStatusHistoryRepositoryImpl implements UserStatusHistoryReposit
         return userStatusHistoryJpaRepository.save(history);
     }
 
-    @Override
     public List<UserStatusHistory> findAllByUserId(UUID userId) {
         return userStatusHistoryJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }

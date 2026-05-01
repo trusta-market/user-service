@@ -52,6 +52,6 @@ public class UserAccountRepositoryImpl implements UserAccountRepository {
     @Override
     public void clearDefaultAccount(UUID userId) {
         userAccountJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId)
-                .ifPresent(account -> account.setDefault(false));
+                .ifPresent(account -> account.unmarkDefault());
     }
 }
