@@ -8,17 +8,15 @@ import com.trusta_market.userservice.user.presentation.dto.request.PostUserRejec
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserSuspendRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+// 관리자용 유저 관리 API 컨트롤러
 @RestController
 @RequestMapping("/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminUserApiController {
 
     private final UserUseCase userUseCase;
@@ -27,46 +25,49 @@ public class AdminUserApiController {
         this.userUseCase = userUseCase;
     }
 
-    // 유저 목록 조회 (관리자용)
+    // 유저 목록 페이징 조회 API
     @GetMapping
-    public ResponseEntity<DomainPage<GetUserResponse>> getUserList(Integer page, Integer size, UserStatus userStatus, Role role) {
-        int resolvedPage = page == null ? 0 : page;
-        int resolvedSize = size == null ? 20 : size;
-        var resultPage = userUseCase.getUserPage(resolvedPage, resolvedSize, userStatus, role);
-        return ResponseEntity.ok(resultPage.map(GetUserResponse::from));
+    public ResponseEntity<DomainPage<GetUserResponse>> getUserList(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) UserStatus userStatus,
+            @RequestParam(required = false) Role role) {
+        var results = userUseCase.getUserPage(page, size, userStatus, role);
+        return ResponseEntity.ok(results.map(GetUserResponse::from));
     }
 
-    // 유저 상세 조회 (관리자용)
+    // 유저 상세 정보 조회 API (추가)
     @GetMapping("/{userId}")
-    public ResponseEntity<GetUserResponse> getUser(@PathVariable UUID userId) {
-        return ResponseEntity.ok(GetUserResponse.from(userUseCase.getUser(userId)));
+    public ResponseEntity<GetUserResponse> getUserDetail(@PathVariable UUID userId) {
+        var result = userUseCase.getUser(userId);
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    // 유저 가입 승인
-    @PostMapping("/{userId}/approve")
-    public ResponseEntity<Void> approveUser(@PathVariable UUID userId) {
-        userUseCase.approveUser(userId);
-        return ResponseEntity.noContent().build();
+    // 유저 가입 승인 API
+    @PatchMapping("/{userId}/approve")
+    public ResponseEntity<GetUserResponse> approveUser(@PathVariable UUID userId) {
+        var result = userUseCase.approveUser(userId);
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    // 유저 가입 거절
+    // 유저 가입 거절 API
     @PostMapping("/{userId}/reject")
-    public ResponseEntity<Void> rejectUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
-        userUseCase.rejectUser(userId, request.reason());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GetUserResponse> rejectUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
+        var result = userUseCase.rejectUser(userId, request.reason());
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    // 유저 계정 정지
+    // 유저 활동 정지 API
     @PostMapping("/{userId}/suspend")
-    public ResponseEntity<Void> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
-        userUseCase.suspendUser(userId, request.reason(), request.expiresAt());
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<GetUserResponse> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
+        var result = userUseCase.suspendUser(userId, request.reason(), request.expiresAt());
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    // 유저 계정 정지 해제
-    @PostMapping("/{userId}/unsuspend")
-    public ResponseEntity<Void> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
-        userUseCase.unsuspendUser(userId, request.reason());
-        return ResponseEntity.noContent().build();
+    // 유저 활동 정지 해제 API
+    @PatchMapping("/{userId}/unsuspend")
+    public ResponseEntity<GetUserResponse> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
+        var result = userUseCase.unsuspendUser(userId, request.reason());
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 }

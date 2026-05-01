@@ -26,11 +26,22 @@ public enum UserErrorCode implements ErrorCodeSpec {
     }
 
     @Override
-    public HttpStatus getStatus() { return status; }
+    public HttpStatus getStatus() {
+        return status;
+    }
+
     @Override
-    public String getCode() { return code; }
+    public String getCode() {
+        return code;
+    }
+
     @Override
-    public String getMessage() { return message; }
+    public String getMessage() {
+        return message;
+    }
+
     @Override
-    public String getField() { return null; }
+    public String getField() {
+        return null;
+    }
 }

@@ -1,13 +1,7 @@
 package com.trusta_market.userservice.trustscore.domain;
 
-
 import com.trustamarket.common.domain.BaseTimeEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,10 +10,11 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.util.UUID;
 
+// 유저 신뢰 점수 엔티티
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-@Table(name = "trust_score")
+@Table(name = "p_trust_scores")
 public class TrustScore extends BaseTimeEntity {
 
     @Id
@@ -32,25 +27,30 @@ public class TrustScore extends BaseTimeEntity {
     private UUID userId;
 
     @Column(nullable = false)
-    private Long score;
+    private long score;
 
     @Version
     @Column(nullable = false)
     private Integer version;
 
     @Builder
-    public TrustScore(UUID trustScoreId, UUID userId, Long score, Integer version) {
+    public TrustScore(UUID trustScoreId, UUID userId, long score, Integer version) {
         this.trustScoreId = trustScoreId;
         this.userId = userId;
-        this.score = score != null ? score : 0L;
+        this.score = score;
         this.version = version;
     }
 
-    public static TrustScore create(UUID userId) {
-        return new TrustScore(null, userId, 0L, null);
+    // 신규 신뢰 점수 객체 생성 (초기 점수 지정 가능)
+    public static TrustScore create(UUID userId, long initialScore) {
+        return TrustScore.builder()
+                .userId(userId)
+                .score(initialScore)
+                .build();
     }
 
-    public void updateScore(Long score) {
-        this.score = score;
+    // 점수 증감 로직
+    public void addScore(long delta) {
+        this.score += delta;
     }
 }

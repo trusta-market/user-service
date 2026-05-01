@@ -11,18 +11,13 @@ import com.trusta_market.userservice.user.presentation.dto.request.PatchUserRequ
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+// 사용자 프로필 관리 외부 API 컨트롤러
 @RestController
-@RequestMapping
+@RequestMapping("/users")
 public class UserApiController {
 
     private final UserUseCase userUseCase;
@@ -31,45 +26,42 @@ public class UserApiController {
         this.userUseCase = userUseCase;
     }
 
-    @PostMapping("/users")
+    // 신규 유저 생성(회원가입) API
+    @PostMapping
     public ResponseEntity<GetUserResponse> createUser(@RequestBody PostUserRequest request) {
-        String keycloakId = SecurityUtil.getCurrentUserId()
-                .map(UUID::toString)
+        String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
         String email = SecurityUtil.getCurrentUserEmail()
                 .orElseThrow(() -> new RuntimeException("이메일 정보가 없습니다."));
         
         var result = userUseCase.createUser(new CreateUserCommand(
-                KeycloakId.of(keycloakId),
-                Email.of(email),
-                Name.of(request.name())
-        ));
+                KeycloakId.of(keycloakId), Email.of(email), Name.of(request.name())));
         return ResponseEntity.status(201).body(GetUserResponse.from(result));
     }
 
-    @GetMapping("/users/me")
+    // 내 프로필 정보 조회 API
+    @GetMapping("/me")
     public ResponseEntity<GetUserResponse> getMyUser() {
-        String keycloakId = SecurityUtil.getCurrentUserId()
-                .map(UUID::toString)
+        String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
         var result = userUseCase.getUserByKeycloakId(KeycloakId.of(keycloakId));
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    @PatchMapping("/users/me")
+    // 내 프로필 정보 수정 API
+    @PatchMapping("/me")
     public ResponseEntity<GetUserResponse> updateMyUser(@RequestBody PatchUserRequest request) {
-        String keycloakId = SecurityUtil.getCurrentUserId()
-                .map(UUID::toString)
+        String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
         var result = userUseCase.updateUser(KeycloakId.of(keycloakId),
                 new UpdateUserCommand(Name.of(request.name())));
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
-    @DeleteMapping("/users/me")
+    // 회원 탈퇴 API (Soft Delete)
+    @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawMyUser() {
-        String keycloakId = SecurityUtil.getCurrentUserId()
-                .map(UUID::toString)
+        String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
         userUseCase.withdrawUser(KeycloakId.of(keycloakId));
         return ResponseEntity.noContent().build();
