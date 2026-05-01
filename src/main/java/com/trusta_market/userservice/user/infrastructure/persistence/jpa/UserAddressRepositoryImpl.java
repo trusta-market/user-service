@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
-import com.trusta_market.userservice.user.domain.repository.UserAddressRepository;
+import com.trusta_market.userservice.user.application.port.out.UserAddressRepository;
 import com.trusta_market.userservice.user.domain.vo.AddressId;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import org.springframework.stereotype.Repository;

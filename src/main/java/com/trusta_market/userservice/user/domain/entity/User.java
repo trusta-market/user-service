@@ -3,17 +3,15 @@ package com.trusta_market.userservice.user.domain.entity;
 import com.trustamarket.common.domain.BaseUserEntity;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Membership;
-import com.trusta_market.userservice.user.domain.vo.Nickname;
-import com.trusta_market.userservice.user.domain.vo.Realname;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.common.exception.DomainException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NicknameConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.RealnameConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NameConverter;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.KeycloakIdConverter;
 import jakarta.persistence.Convert;
@@ -50,13 +48,9 @@ public class User extends BaseUserEntity {
     @Column(nullable = false, unique = true, length = 100)
     private Email email;
 
-    @Convert(converter = RealnameConverter.class)
-    @Column(nullable = false, length = 100)
-    private Realname realname;
-
-    @Convert(converter = NicknameConverter.class)
+    @Convert(converter = NameConverter.class)
     @Column(nullable = false, unique = true, length = 100)
-    private Nickname nickname;
+    private Name name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -81,8 +75,7 @@ public class User extends BaseUserEntity {
     public User(UserId userId,
                 KeycloakId keycloakId,
                 Email email,
-                Realname realname,
-                Nickname nickname,
+                Name name,
                 Role role,
                 UserStatus userStatus,
                 Membership membership,
@@ -91,8 +84,7 @@ public class User extends BaseUserEntity {
         this.userId = userId;
         this.keycloakId = keycloakId;
         this.email = email;
-        this.realname = realname;
-        this.nickname = nickname;
+        this.name = name;
         this.role = role != null ? role : Role.MEMBER;
         this.userStatus = userStatus != null ? userStatus : UserStatus.PENDING;
         this.membership = membership != null ? membership : Membership.BRONZE;
@@ -100,22 +92,18 @@ public class User extends BaseUserEntity {
         this.version = version;
     }
 
-    public static User create(KeycloakId keycloakId, Email email, Realname realname, Nickname nickname) {
+    public static User create(KeycloakId keycloakId, Email email, Name name) {
         return User.builder()
                 .userId(UserId.of(UUID.randomUUID()))
                 .keycloakId(keycloakId)
                 .email(email)
-                .realname(realname)
-                .nickname(nickname)
+                .name(name)
                 .build();
     }
 
-    public void updateProfile(Nickname nickname, Realname realname) {
-        if (nickname != null) {
-            this.nickname = nickname;
-        }
-        if (realname != null) {
-            this.realname = realname;
+    public void updateProfile(Name name) {
+        if (name != null) {
+            this.name = name;
         }
     }
 

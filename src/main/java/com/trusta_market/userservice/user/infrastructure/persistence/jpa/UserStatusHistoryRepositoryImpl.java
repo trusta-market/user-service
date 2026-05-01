@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 
 import com.trusta_market.userservice.user.domain.entity.UserStatusHistory;
-import com.trusta_market.userservice.user.domain.repository.UserStatusHistoryRepository;
+import com.trusta_market.userservice.user.application.port.out.UserStatusHistoryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
