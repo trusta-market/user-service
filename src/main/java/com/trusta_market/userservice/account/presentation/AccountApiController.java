@@ -13,7 +13,7 @@ import java.util.UUID;
 
 // 사용자 계좌 관리 외부 API 컨트롤러
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/api/v1/admin/accounts")
 public class AccountApiController {
 
     private final AccountUseCase accountUseCase;

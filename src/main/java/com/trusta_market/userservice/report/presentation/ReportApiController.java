@@ -12,7 +12,7 @@ import java.util.UUID;
 
 // 사용자 신고 관련 외부 API 컨트롤러
 @RestController
-@RequestMapping("/reports")
+@RequestMapping("/api/v1/reports")
 public class ReportApiController {
 
     private final ReportUseCase reportUseCase;

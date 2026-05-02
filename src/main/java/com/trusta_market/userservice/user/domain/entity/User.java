@@ -9,7 +9,6 @@ import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
 import com.trusta_market.userservice.common.exception.DomainException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NameConverter;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
@@ -36,9 +35,8 @@ import java.util.UUID;
 public class User extends BaseUserEntity {
 
     @Id
-    @Convert(converter = UserIdConverter.class)
-    @Column(nullable = false, updatable = false)
-    private UserId userId;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
 
     @Convert(converter = KeycloakIdConverter.class)
     @Column(nullable = false, unique = true, updatable = false, length = 100)
@@ -81,12 +79,12 @@ public class User extends BaseUserEntity {
                 Membership membership,
                 String slackId,
                 Integer version) {
-        this.userId = userId;
+        this.userId = userId != null ? userId.value() : null;
         this.keycloakId = keycloakId;
         this.email = email;
         this.name = name;
         this.role = role != null ? role : Role.MEMBER;
-        this.userStatus = userStatus != null ? userStatus : UserStatus.PENDING;
+        this.userStatus = userStatus != null ? userStatus : UserStatus.APPROVED;
         this.membership = membership != null ? membership : Membership.BRONZE;
         this.slackId = slackId;
         this.version = version;
@@ -99,6 +97,10 @@ public class User extends BaseUserEntity {
                 .email(email)
                 .name(name)
                 .build();
+    }
+
+    public UserId getUserId() {
+        return userId != null ? UserId.of(userId) : null;
     }
 
     public void updateProfile(Name name) {

@@ -15,7 +15,7 @@ import java.util.UUID;
 
 // 사용자 배송지 관리 외부 API 컨트롤러
 @RestController
-@RequestMapping("/addresses")
+@RequestMapping("/api/v1/users/addresses")
 public class AddressApiController {
 
     private final UserUseCase userUseCase;

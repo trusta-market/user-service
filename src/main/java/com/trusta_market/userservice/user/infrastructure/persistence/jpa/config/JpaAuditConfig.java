@@ -2,6 +2,7 @@ package com.trusta_market.userservice.user.infrastructure.persistence.jpa.config
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
@@ -11,10 +12,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Configuration
-@EnableJpaAuditing
+//@EnableJpaAuditing
 public class JpaAuditConfig {
 
     @Bean
+    @Primary
     public AuditorAware<UUID> auditorProvider() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

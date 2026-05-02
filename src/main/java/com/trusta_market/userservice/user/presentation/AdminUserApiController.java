@@ -15,7 +15,7 @@ import java.util.UUID;
 
 // 관리자용 유저 관리 API 컨트롤러
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/api/v1/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminUserApiController {
 

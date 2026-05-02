@@ -5,6 +5,7 @@ import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.common.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.application.dto.command.CreateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.CreateUserCommand;
+import com.trusta_market.userservice.user.application.dto.command.SignUpCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
 import com.trusta_market.userservice.user.application.dto.result.AddressResult;
@@ -13,6 +14,7 @@ import com.trusta_market.userservice.user.application.dto.result.internal.Member
 import com.trusta_market.userservice.user.application.dto.result.internal.UserInternalResult;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.application.port.in.UserValidationUseCase;
+import com.trusta_market.userservice.user.application.port.out.IdentityProviderPort;
 import com.trusta_market.userservice.user.application.port.out.UserAddressRepository;
 import com.trusta_market.userservice.user.application.port.out.UserRepository;
 import com.trusta_market.userservice.user.domain.entity.User;
@@ -21,7 +23,9 @@ import com.trusta_market.userservice.user.domain.exception.AddressErrorCode;
 import com.trusta_market.userservice.user.domain.exception.InternalErrorCode;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.domain.vo.AddressId;
+import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
@@ -40,10 +44,46 @@ public class UserService implements UserUseCase, UserValidationUseCase {
 
     private final UserRepository userRepository;
     private final UserAddressRepository userAddressRepository;
+    private final IdentityProviderPort identityProviderPort;
 
-    public UserService(UserRepository userRepository, UserAddressRepository userAddressRepository) {
+    public UserService(UserRepository userRepository, 
+                       UserAddressRepository userAddressRepository,
+                       IdentityProviderPort identityProviderPort) {
         this.userRepository = userRepository;
         this.userAddressRepository = userAddressRepository;
+        this.identityProviderPort = identityProviderPort;
+    }
+
+    // 통합 회원가입 (Keycloak 계정 생성 + 로컬 프로필 생성)
+    @Override
+    public UserResult signUp(SignUpCommand command) {
+        System.out.println(">>> UserService.signUp 시작: " + command.email());
+        try {
+            if (userRepository.existsByEmail(command.email())) {
+                throw new DomainException(UserErrorCode.DUPLICATE_EMAIL);
+            }
+            if (userRepository.existsByName(command.name())) {
+                throw new DomainException(UserErrorCode.INVALID_NAME);
+            }
+            
+            Email email = command.email();
+            Name name = command.name();
+            
+            System.out.println(">>> Keycloak 계정 생성 요청...");
+            KeycloakId keycloakId = identityProviderPort.createIdentity(email, command.password(), name);
+            System.out.println(">>> Keycloak 계정 생성 완료: " + keycloakId.value());
+
+            User user = User.create(keycloakId, email, name);
+            System.out.println(">>> 로컬 DB 사용자 저장 시도...");
+            User savedUser = userRepository.save(user);
+            System.out.println(">>> 로컬 DB 사용자 저장 완료 ID: " + savedUser.getUserId().value());
+
+            return UserResult.from(savedUser);
+        } catch (Exception e) {
+            System.err.println(">>> UserService.signUp 중 에러 발생!");
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // 신규 유저 생성 (이메일/이름 중복 검사 포함)

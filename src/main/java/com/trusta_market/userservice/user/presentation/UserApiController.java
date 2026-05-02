@@ -1,6 +1,7 @@
 package com.trusta_market.userservice.user.presentation;
 
 import com.trusta_market.userservice.user.application.dto.command.CreateUserCommand;
+import com.trusta_market.userservice.user.application.dto.command.SignUpCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.domain.vo.Email;
@@ -9,7 +10,9 @@ import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.infrastructure.security.SecurityUtil;
 import com.trusta_market.userservice.user.presentation.dto.request.PatchUserRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserRequest;
+import com.trusta_market.userservice.user.presentation.dto.request.SignUpRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,13 +20,21 @@ import java.util.UUID;
 
 // 사용자 프로필 관리 외부 API 컨트롤러
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/v1/users")
 public class UserApiController {
 
     private final UserUseCase userUseCase;
 
     public UserApiController(UserUseCase userUseCase) {
         this.userUseCase = userUseCase;
+    }
+
+    // 통합 회원가입 (Keycloak 계정 + 서비스 프로필 동시 생성)
+    @PostMapping("/signup")
+    public ResponseEntity<GetUserResponse> signup(@Valid @RequestBody SignUpRequest request) {
+        var result = userUseCase.signUp(new SignUpCommand(
+                Email.of(request.email()), request.password(), Name.of(request.name())));
+        return ResponseEntity.status(201).body(GetUserResponse.from(result));
     }
 
     // 신규 유저 생성(회원가입) API

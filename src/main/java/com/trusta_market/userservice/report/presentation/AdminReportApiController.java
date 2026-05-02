@@ -13,7 +13,7 @@ import java.util.UUID;
 
 // 관리자용 사용자 신고 관리 API 컨트롤러
 @RestController
-@RequestMapping("/admin/reports")
+@RequestMapping("/api/v1/admin/reports")
 @PreAuthorize("hasRole('ADMIN')") // 클래스 레벨에서 관리자 권한 강제
 public class AdminReportApiController {
 
