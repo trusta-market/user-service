@@ -69,7 +69,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
             Email email = command.email();
             Name name = command.name();
             
-            System.out.println(">>> Keycloak 계정 생성 요청...");
+            System.out.println(">>> Keycloak 계정 생성 요청...");// 컴파일 단계 확인용
             KeycloakId keycloakId = identityProviderPort.createIdentity(email, command.password(), name);
             System.out.println(">>> Keycloak 계정 생성 완료: " + keycloakId.value());
 
@@ -344,5 +344,13 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     @Transactional(readOnly = true)
     public void validateUserCanMutate(UUID userId) {
         assertUserCanMutate(findUserById(userId));
+    }
+
+    // Keycloak ID를 내부 UUID로 변환
+    @Override
+    @Transactional(readOnly = true)
+    public UUID resolveInternalId(UUID keycloakId) {
+        return findUserByKeycloakId(KeycloakId.of(keycloakId.toString()))
+                .getUserId().value();
     }
 }

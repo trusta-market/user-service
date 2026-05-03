@@ -11,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,10 +27,10 @@ import java.util.UUID;
 public class UserAddress extends BaseUserEntity {
 
     @Id
-    @Convert(converter = AddressIdConverter.class)
-    @Column(nullable = false, updatable = false)
-    private AddressId addressId;
-
+    @Column(name = "address_id", nullable = false, updatable = false)
+    private UUID addressId;
+    
+    @JdbcTypeCode(SqlTypes.UUID)
     @Convert(converter = UserIdConverter.class)
     @Column(nullable = false)
     private UserId userId;
@@ -57,7 +59,7 @@ public class UserAddress extends BaseUserEntity {
 
     @Builder
     public UserAddress(AddressId addressId, UserId userId, String recipientName, String recipientPhone, String zipCode, String address, String addressDetail, boolean isDefault, Integer version) {
-        this.addressId = addressId;
+        this.addressId = addressId != null ? addressId.value() : null;
         this.userId = userId;
         this.recipientName = recipientName;
         this.recipientPhone = recipientPhone;
@@ -66,6 +68,10 @@ public class UserAddress extends BaseUserEntity {
         this.addressDetail = addressDetail;
         this.isDefault = isDefault;
         this.version = version;
+    }
+
+    public AddressId getAddressId() {
+        return addressId != null ? AddressId.of(addressId) : null;
     }
 
     public static UserAddress create(UserId userId, String recipientName, String recipientPhone, String zipCode, String address, String addressDetail, boolean isDefault) {

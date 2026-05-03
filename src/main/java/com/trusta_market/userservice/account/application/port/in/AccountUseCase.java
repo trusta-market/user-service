@@ -11,4 +11,8 @@ public interface AccountUseCase {
     List<AccountResult> getAccountList(UUID userId);
     void deleteAccount(UUID userId, UUID accountId);
     void changeAccountDefault(UUID userId, UUID accountId);
+    
+    // Admin features
+    void verifyAccount(UUID accountId);
+    void rejectAccount(UUID accountId, String reason);
 }

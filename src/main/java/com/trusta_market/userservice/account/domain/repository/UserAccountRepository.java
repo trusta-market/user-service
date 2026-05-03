@@ -20,4 +20,6 @@ public interface UserAccountRepository {
     Optional<UserAccount> findDefaultAccountByUserId(UUID userId);
 
     void clearDefaultAccount(UUID userId);
+    
+    Optional<UserAccount> findActiveAccountById(UUID accountId);
 }

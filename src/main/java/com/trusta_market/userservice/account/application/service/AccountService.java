@@ -8,6 +8,7 @@ import com.trusta_market.userservice.account.domain.exception.AccountErrorCode;
 import com.trusta_market.userservice.account.domain.repository.UserAccountRepository;
 import com.trusta_market.userservice.common.exception.DomainException;
 import com.trusta_market.userservice.user.application.port.in.UserValidationUseCase;
+import com.trusta_market.userservice.user.infrastructure.security.SecurityUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,15 +30,16 @@ public class AccountService implements AccountUseCase {
 
     @Override
     public AccountResult createAccount(CreateAccountCommand command) {
-        userValidationUseCase.validateUserCanMutate(command.userId());
+        UUID internalUserId = userValidationUseCase.resolveInternalId(command.userId());
+        userValidationUseCase.validateUserCanMutate(internalUserId);
 
-        if (userAccountRepository.countActiveAccountsByUserId(command.userId()) >= 5) {
+        if (userAccountRepository.countActiveAccountsByUserId(internalUserId) >= 5) {
             throw new DomainException(AccountErrorCode.ACCOUNT_LIMIT_EXCEEDED);
         }
 
-        boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(command.userId()) == 0;
+        boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(internalUserId) == 0;
         UserAccount account = UserAccount.create(
-                command.userId(), command.bankCode(), command.accountNumber(),
+                internalUserId, command.bankCode(), command.accountNumber(),
                 command.accountHolder(), command.accountType(), makeDefault, false
         );
 
@@ -47,7 +49,8 @@ public class AccountService implements AccountUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<AccountResult> getAccountList(UUID userId) {
-        return userAccountRepository.findAllActiveAccountsByUserId(userId)
+        UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
+        return userAccountRepository.findAllActiveAccountsByUserId(internalUserId)
                 .stream()
                 .map(AccountResult::from)
                 .toList();
@@ -55,18 +58,41 @@ public class AccountService implements AccountUseCase {
 
     @Override
     public void deleteAccount(UUID userId, UUID accountId) {
-        userValidationUseCase.validateUserCanMutate(userId);
-        UserAccount account = findOwnedAccount(userId, accountId);
-        account.delete(userId);
+        UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
+        userValidationUseCase.validateUserCanMutate(internalUserId);
+        UserAccount account = findOwnedAccount(internalUserId, accountId);
+        account.delete(internalUserId);
         userAccountRepository.save(account);
     }
 
     @Override
     public void changeAccountDefault(UUID userId, UUID accountId) {
-        userValidationUseCase.validateUserCanMutate(userId);
-        UserAccount account = findOwnedAccount(userId, accountId);
-        userAccountRepository.clearDefaultAccount(userId);
+        UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
+        userValidationUseCase.validateUserCanMutate(internalUserId);
+        UserAccount account = findOwnedAccount(internalUserId, accountId);
+        userAccountRepository.clearDefaultAccount(internalUserId);
         account.markAsDefault();
+        userAccountRepository.save(account);
+    }
+
+    @Override
+    public void verifyAccount(UUID accountId) {
+        UserAccount account = userAccountRepository.findActiveAccountById(accountId)
+                .orElseThrow(() -> new DomainException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+        
+        // 실제로는 관리자 ID를 넣어야 하지만, 우선 현재 인증된 유저(관리자) ID 사용
+        UUID adminId = SecurityUtil.getCurrentUserId().orElse(null);
+        account.approve(adminId);
+        userAccountRepository.save(account);
+    }
+
+    @Override
+    public void rejectAccount(UUID accountId, String reason) {
+        UserAccount account = userAccountRepository.findActiveAccountById(accountId)
+                .orElseThrow(() -> new DomainException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+        
+        // 반려 로직 (현재 엔티티에 상태 필드가 없으므로 검증 해제로 처리하거나 로그 기록)
+        account.delete(SecurityUtil.getCurrentUserId().orElse(null));
         userAccountRepository.save(account);
     }
 

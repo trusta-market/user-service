@@ -15,8 +15,9 @@ import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserJpaRepository extends JpaRepository<User, UserId> {
+public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByKeycloakIdAndDeletedAtIsNull(KeycloakId keycloakId);
 

@@ -54,4 +54,9 @@ public class UserAccountRepositoryImpl implements UserAccountRepository {
         userAccountJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId)
                 .ifPresent(account -> account.unmarkDefault());
     }
+
+    @Override
+    public Optional<UserAccount> findActiveAccountById(UUID accountId) {
+        return userAccountJpaRepository.findByAccountIdAndDeletedAtIsNull(accountId);
+    }
 }

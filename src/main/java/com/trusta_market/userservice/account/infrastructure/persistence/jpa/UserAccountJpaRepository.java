@@ -12,4 +12,5 @@ public interface UserAccountJpaRepository extends JpaRepository<UserAccount, UUI
     long countByUserIdAndDeletedAtIsNull(UUID userId);
     Optional<UserAccount> findByAccountIdAndUserIdAndDeletedAtIsNull(UUID accountId, UUID userId);
     Optional<UserAccount> findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(UUID userId);
+    Optional<UserAccount> findByAccountIdAndDeletedAtIsNull(UUID accountId);
 }
