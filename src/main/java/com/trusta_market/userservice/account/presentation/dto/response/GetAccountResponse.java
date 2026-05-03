@@ -10,7 +10,8 @@ public record GetAccountResponse(
         String accountNumber,
         String accountHolder,
         String accountType,
-        boolean isDefault
+        boolean isDefault,
+        boolean isVerified
 ) {
     // Result 객체로부터 Response 생성
     public static GetAccountResponse from(AccountResult result) {
@@ -20,6 +21,7 @@ public record GetAccountResponse(
                 result.accountNumber(),
                 result.accountHolder(),
                 result.accountType(),
-                result.isDefault());
+                result.isDefault(),
+                result.isVerified());
     }
 }
