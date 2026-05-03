@@ -10,7 +10,8 @@ public record AccountResult(
     String accountNumber,
     String accountHolder,
     String accountType,
-    boolean isDefault
+    boolean isDefault,
+    boolean isVerified
 ) {
     public static AccountResult from(UserAccount account) {
         return new AccountResult(
@@ -20,7 +21,8 @@ public record AccountResult(
             account.getAccountNumber(),
             account.getAccountHolder(),
             account.getAccountType().name(),
-            account.isDefault()
+            account.isDefault(),
+            account.isVerified()
         );
     }
 }
