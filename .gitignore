@@ -9,3 +9,6 @@ build/
 # Java
 *.class
 
+# Local environment
+.env
+
