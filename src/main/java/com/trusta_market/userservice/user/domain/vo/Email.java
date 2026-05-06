@@ -3,7 +3,7 @@ package com.trusta_market.userservice.user.domain.vo;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.common.exception.DomainException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 
 public record Email(String value) {
