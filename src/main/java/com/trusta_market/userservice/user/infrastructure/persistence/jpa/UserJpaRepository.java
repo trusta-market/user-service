@@ -8,25 +8,26 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.trusta_market.userservice.user.domain.vo.Email;
-import com.trusta_market.userservice.user.domain.vo.Nickname;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface UserJpaRepository extends JpaRepository<User, UserId> {
+public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByKeycloakIdAndDeletedAtIsNull(KeycloakId keycloakId);
 
     Optional<User> findByEmailAndDeletedAtIsNull(Email email);
 
-    Optional<User> findByNicknameAndDeletedAtIsNull(Nickname nickname);
+    Optional<User> findByNameAndDeletedAtIsNull(Name name);
 
     boolean existsByEmailAndDeletedAtIsNull(Email email);
 
-    boolean existsByNicknameAndDeletedAtIsNull(Nickname nickname);
+    boolean existsByNameAndDeletedAtIsNull(Name name);
 
     Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 

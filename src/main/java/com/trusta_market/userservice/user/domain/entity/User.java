@@ -3,19 +3,17 @@ package com.trusta_market.userservice.user.domain.entity;
 import com.trustamarket.common.domain.BaseUserEntity;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Membership;
-import com.trusta_market.userservice.user.domain.vo.Nickname;
-import com.trusta_market.userservice.user.domain.vo.Realname;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.common.exception.DomainException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NicknameConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.RealnameConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NameConverter;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.KeycloakIdConverter;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,6 +22,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,9 +38,8 @@ import java.util.UUID;
 public class User extends BaseUserEntity {
 
     @Id
-    @Convert(converter = UserIdConverter.class)
-    @Column(nullable = false, updatable = false)
-    private UserId userId;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
 
     @Convert(converter = KeycloakIdConverter.class)
     @Column(nullable = false, unique = true, updatable = false, length = 100)
@@ -50,13 +49,9 @@ public class User extends BaseUserEntity {
     @Column(nullable = false, unique = true, length = 100)
     private Email email;
 
-    @Convert(converter = RealnameConverter.class)
-    @Column(nullable = false, length = 100)
-    private Realname realname;
-
-    @Convert(converter = NicknameConverter.class)
+    @Convert(converter = NameConverter.class)
     @Column(nullable = false, unique = true, length = 100)
-    private Nickname nickname;
+    private Name name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -81,41 +76,39 @@ public class User extends BaseUserEntity {
     public User(UserId userId,
                 KeycloakId keycloakId,
                 Email email,
-                Realname realname,
-                Nickname nickname,
+                Name name,
                 Role role,
                 UserStatus userStatus,
                 Membership membership,
                 String slackId,
                 Integer version) {
-        this.userId = userId;
+        this.userId = userId != null ? userId.value() : null;
         this.keycloakId = keycloakId;
         this.email = email;
-        this.realname = realname;
-        this.nickname = nickname;
+        this.name = name;
         this.role = role != null ? role : Role.MEMBER;
-        this.userStatus = userStatus != null ? userStatus : UserStatus.PENDING;
+        this.userStatus = userStatus != null ? userStatus : UserStatus.APPROVED;
         this.membership = membership != null ? membership : Membership.BRONZE;
         this.slackId = slackId;
         this.version = version;
     }
 
-    public static User create(KeycloakId keycloakId, Email email, Realname realname, Nickname nickname) {
+    public static User create(KeycloakId keycloakId, Email email, Name name) {
         return User.builder()
                 .userId(UserId.of(UUID.randomUUID()))
                 .keycloakId(keycloakId)
                 .email(email)
-                .realname(realname)
-                .nickname(nickname)
+                .name(name)
                 .build();
     }
 
-    public void updateProfile(Nickname nickname, Realname realname) {
-        if (nickname != null) {
-            this.nickname = nickname;
-        }
-        if (realname != null) {
-            this.realname = realname;
+    public UserId getUserId() {
+        return userId != null ? UserId.of(userId) : null;
+    }
+
+    public void updateProfile(Name name) {
+        if (name != null) {
+            this.name = name;
         }
     }
 
@@ -129,7 +122,7 @@ public class User extends BaseUserEntity {
     public void approve() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+            throw new DomainException(UserErrorCode.INVALID_STATUS_TRANSITION);
         }
         this.userStatus = UserStatus.APPROVED;
     }
@@ -137,7 +130,7 @@ public class User extends BaseUserEntity {
     public void reject() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+            throw new DomainException(UserErrorCode.INVALID_STATUS_TRANSITION);
         }
         this.userStatus = UserStatus.REJECTED;
     }

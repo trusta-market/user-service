@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
-import com.trusta_market.userservice.user.domain.repository.UserAddressRepository;
+import com.trusta_market.userservice.user.application.port.out.UserAddressRepository;
 import com.trusta_market.userservice.user.domain.vo.AddressId;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import org.springframework.stereotype.Repository;
@@ -25,11 +25,6 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
     }
 
     @Override
-    public Optional<UserAddress> findById(AddressId addressId) {
-        return userAddressJpaRepository.findById(addressId);
-    }
-
-    @Override
     public List<UserAddress> findAllActiveAddressesByUserId(UserId userId) {
         return userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNull(userId);
     }
@@ -41,12 +36,7 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
 
     @Override
     public Optional<UserAddress> findActiveAddressByIdAndUserId(AddressId addressId, UserId userId) {
-        return userAddressJpaRepository.findByAddressIdAndUserIdAndDeletedAtIsNull(addressId, userId);
-    }
-
-    @Override
-    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
-        return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
+        return userAddressJpaRepository.findByAddressIdAndUserIdAndDeletedAtIsNull(addressId.value(), userId);
     }
 
     @Transactional
@@ -54,5 +44,14 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
     public void clearDefaultAddress(UserId userId) {
         userAddressJpaRepository.findAllByUserIdAndDeletedAtIsNullAndIsDefaultTrue(userId)
                 .forEach(address -> address.unmarkDefaultAddress());
+    }
+
+    // 인터페이스에 없는 메서드들이지만 필요하다면 남겨둘 수 있으나 @Override는 제거
+    public Optional<UserAddress> findById(AddressId addressId) {
+        return userAddressJpaRepository.findById(addressId.value());
+    }
+
+    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
+        return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
     }
 }
