@@ -34,6 +34,7 @@ import java.util.UUID;
 public class User extends BaseUserEntity {
 
     @Id
+    @JdbcTypeCode(SqlTypes.UUID)
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 

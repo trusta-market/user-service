@@ -1,22 +1,27 @@
 package com.trusta_market.userservice.common.pagination;
 
-import lombok.Getter;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-@Getter
-public class DomainPage<T> {
-    private final List<T> content;
-    private final int page;
-    private final int size;
-    private final long totalElements;
-
-    public DomainPage(List<T> content, int page, int size, long totalElements) {
-        this.content = content;
-        this.page = page;
-        this.size = size;
-        this.totalElements = totalElements;
+public record DomainPage<T>(
+    List<T> content,
+    int page,
+    int size,
+    long totalElements
+) {
+    public DomainPage {
+        if (content == null) {
+            throw new IllegalArgumentException("Content cannot be null");
+        }
+        if (page < 0) {
+            throw new IllegalArgumentException("Page index cannot be less than zero");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("Page size must be greater than zero");
+        }
+        if (totalElements < 0) {
+            throw new IllegalArgumentException("Total elements cannot be less than zero");
+        }
     }
 
     public static <T> DomainPage<T> of(List<T> content, int page, int size, long totalElements) {
@@ -24,7 +29,7 @@ public class DomainPage<T> {
     }
 
     public <U> DomainPage<U> map(Function<? super T, ? extends U> converter) {
-        List<U> convertedContent = this.content.stream().map(converter).collect(Collectors.toList());
+        List<U> convertedContent = this.content.stream().map(converter).toList();
         return new DomainPage<>(convertedContent, page, size, totalElements);
     }
 }
