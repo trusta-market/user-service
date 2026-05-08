@@ -19,6 +19,8 @@ import java.util.UUID;
 
 public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
+    Optional<User> findByUserIdAndDeletedAtIsNull(UUID userId);
+
     Optional<User> findByKeycloakIdAndDeletedAtIsNull(KeycloakId keycloakId);
 
     Optional<User> findByEmailAndDeletedAtIsNull(Email email);

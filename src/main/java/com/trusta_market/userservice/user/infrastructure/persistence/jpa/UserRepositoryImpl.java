@@ -37,7 +37,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findById(UserId userId) {
-        return userJpaRepository.findById(userId.value());
+        return userJpaRepository.findByUserIdAndDeletedAtIsNull(userId.value());
     }
 
     @Override

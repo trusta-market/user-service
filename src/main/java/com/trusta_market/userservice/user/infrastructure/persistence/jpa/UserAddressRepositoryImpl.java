@@ -46,12 +46,4 @@ public class UserAddressRepositoryImpl implements UserAddressRepository {
                 .forEach(address -> address.unmarkDefaultAddress());
     }
 
-    // 인터페이스에 없는 메서드들이지만 필요하다면 남겨둘 수 있으나 @Override는 제거
-    public Optional<UserAddress> findById(AddressId addressId) {
-        return userAddressJpaRepository.findById(addressId.value());
-    }
-
-    public Optional<UserAddress> findDefaultAddressByUserId(UserId userId) {
-        return userAddressJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
-    }
 }

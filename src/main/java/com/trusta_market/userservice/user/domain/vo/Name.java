@@ -1,13 +1,12 @@
 package com.trusta_market.userservice.user.domain.vo;
 
-import com.trusta_market.userservice.common.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
-import org.springframework.util.StringUtils;
-
 public record Name(String value) {
     public Name {
-        if (!StringUtils.hasText(value) || value.length() < 2 || value.length() > 20) {
-            throw new DomainException(UserErrorCode.INVALID_NAME);
+        value = value != null ? value.trim() : null;
+        if (value == null || value.isEmpty() || value.length() < 2 || value.length() > 20) {
+            throw new UserException(UserErrorCode.INVALID_NAME);
         }
     }
 

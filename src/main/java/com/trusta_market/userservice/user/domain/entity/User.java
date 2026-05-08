@@ -7,14 +7,10 @@ import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.common.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.NameConverter;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.KeycloakIdConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
-import jakarta.persistence.Convert;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,15 +37,12 @@ public class User extends BaseUserEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
-    @Convert(converter = KeycloakIdConverter.class)
     @Column(nullable = false, unique = true, updatable = false, length = 100)
     private KeycloakId keycloakId;
 
-    @Convert(converter = EmailConverter.class)
     @Column(nullable = false, unique = true, length = 100)
     private Email email;
 
-    @Convert(converter = NameConverter.class)
     @Column(nullable = false, unique = true, length = 100)
     private Name name;
 
@@ -107,6 +100,7 @@ public class User extends BaseUserEntity {
     }
 
     public void updateProfile(Name name) {
+        checkNotWithdrawn();
         if (name != null) {
             this.name = name;
         }
@@ -114,7 +108,7 @@ public class User extends BaseUserEntity {
 
     public void withdraw(UUID userId) {
         if (isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         super.delete(userId);
     }
@@ -122,7 +116,7 @@ public class User extends BaseUserEntity {
     public void approve() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.INVALID_STATUS_TRANSITION);
+            throw new UserException(UserErrorCode.INVALID_STATUS_TRANSITION);
         }
         this.userStatus = UserStatus.APPROVED;
     }
@@ -130,7 +124,7 @@ public class User extends BaseUserEntity {
     public void reject() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.INVALID_STATUS_TRANSITION);
+            throw new UserException(UserErrorCode.INVALID_STATUS_TRANSITION);
         }
         this.userStatus = UserStatus.REJECTED;
     }
@@ -138,7 +132,7 @@ public class User extends BaseUserEntity {
     public void suspend() {
         checkNotWithdrawn();
         if (this.userStatus == UserStatus.SUSPENDED) {
-            throw new DomainException(UserErrorCode.SUSPENDED_USER);
+            throw new UserException(UserErrorCode.SUSPENDED_USER);
         }
         this.userStatus = UserStatus.SUSPENDED;
     }
@@ -146,14 +140,14 @@ public class User extends BaseUserEntity {
     public void unsuspend() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.SUSPENDED) {
-            throw new DomainException(UserErrorCode.USER_NOT_FOUND);
+            throw new UserException(UserErrorCode.INVALID_STATUS_TRANSITION);
         }
         this.userStatus = UserStatus.APPROVED;
     }
 
     private void checkNotWithdrawn() {
         if (isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
     }
 }
