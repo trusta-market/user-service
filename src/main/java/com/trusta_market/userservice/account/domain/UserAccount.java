@@ -1,15 +1,12 @@
 package com.trusta_market.userservice.account.domain;
 
+import com.trusta_market.userservice.account.domain.vo.AccountHolder;
+import com.trusta_market.userservice.account.domain.vo.AccountNumber;
 import com.trusta_market.userservice.account.domain.vo.AccountType;
+import com.trusta_market.userservice.account.domain.vo.BankCode;
+
 import com.trustamarket.common.domain.BaseUserEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,13 +32,13 @@ public class UserAccount extends BaseUserEntity {
     private UUID userId;
 
     @Column(nullable = false, length = 10)
-    private String bankCode;
+    private BankCode bankCode;
 
     @Column(nullable = false, length = 100)
-    private String accountNumber;
+    private AccountNumber accountNumber;
 
     @Column(nullable = false, length = 50)
-    private String accountHolder;
+    private AccountHolder accountHolder;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -62,7 +59,7 @@ public class UserAccount extends BaseUserEntity {
     private Integer version;
 
     @Builder
-    public UserAccount(UUID accountId, UUID userId, String bankCode, String accountNumber, String accountHolder, AccountType accountType, boolean isVerified, boolean isDefault, UUID approvedBy, LocalDateTime approvedAt, Integer version) {
+    public UserAccount(UUID accountId, UUID userId, BankCode bankCode, AccountNumber accountNumber, AccountHolder accountHolder, AccountType accountType, boolean isVerified, boolean isDefault, UUID approvedBy, LocalDateTime approvedAt, Integer version) {
         this.accountId = accountId;
         this.userId = userId;
         this.bankCode = bankCode;
@@ -76,7 +73,10 @@ public class UserAccount extends BaseUserEntity {
         this.version = version;
     }
 
-    public static UserAccount create(UUID userId, String bankCode, String accountNumber, String accountHolder, AccountType accountType, boolean isDefault, boolean isVerified) {
+    public static UserAccount create(UUID userId, BankCode bankCode, AccountNumber accountNumber, AccountHolder accountHolder, AccountType accountType, boolean isDefault, boolean isVerified) {
+        if (userId == null || bankCode == null || accountNumber == null || accountHolder == null || accountType == null) {
+            throw new AccountException(AccountErrorCode.INVALID_INPUT);
+        }
         return UserAccount.builder()
                 .userId(userId)
                 .bankCode(bankCode)
@@ -97,6 +97,9 @@ public class UserAccount extends BaseUserEntity {
     }
 
     public void approve(UUID approvedBy) {
+        if (approvedBy == null) {
+            throw new AccountException(AccountErrorCode.INVALID_INPUT);
+        }
         this.isVerified = true;
         this.approvedBy = approvedBy;
         this.approvedAt = LocalDateTime.now();
