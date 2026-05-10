@@ -104,25 +104,25 @@ public class UserReport extends BaseCreatedEntity {
                 .build();
     }
 
-    public void review(UUID reviewedBy) {
+    public void review(UUID reviewedBy, LocalDateTime reviewedAt) {
         if (this.status != ReportStatus.PENDING) {
             throw new ReportException(ReportErrorCode.ALREADY_PROCESSED);
         }
         this.status = ReportStatus.REVIEWED;
         this.reviewedBy = reviewedBy;
-        this.reviewedAt = LocalDateTime.now();
+        this.reviewedAt = reviewedAt;
 
         // 타 바운디드 컨텍스트(신뢰 점수 하락, 알림 발송 등)에 상태 전이를 알리기 위해 도메인 이벤트를 발행합니다.
         registerEvent(new ReportReviewedEvent(this.reportedUserId.value()));
     }
 
-    public void dismiss(UUID reviewedBy) {
+    public void dismiss(UUID reviewedBy, LocalDateTime reviewedAt) {
         if (this.status != ReportStatus.PENDING) {
             throw new ReportException(ReportErrorCode.ALREADY_PROCESSED);
         }
         this.status = ReportStatus.DISMISSED;
         this.reviewedBy = reviewedBy;
-        this.reviewedAt = LocalDateTime.now();
+        this.reviewedAt = reviewedAt;
 
         registerEvent(new ReportDismissedEvent(this.reportedUserId.value()));
     }
