@@ -19,13 +19,41 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.DomainEvents;
+import org.springframework.data.domain.AfterDomainEventPublication;
+import jakarta.persistence.Transient;
+import com.trusta_market.userservice.report.domain.event.ReportReviewedEvent;
+import com.trusta_market.userservice.report.domain.event.ReportDismissedEvent;
+import com.trusta_market.userservice.report.domain.exception.ReportException;
+import com.trusta_market.userservice.report.domain.exception.ReportErrorCode;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "p_reports")
 public class UserReport extends BaseCreatedEntity {
+
+    @Transient
+    private List<Object> domainEvents = new ArrayList<>();
+
+    @DomainEvents
+    public Collection<Object> domainEvents() {
+        return Collections.unmodifiableList(domainEvents);
+    }
+
+    @AfterDomainEventPublication
+    public void clearEvents() {
+        domainEvents.clear();
+    }
+
+    protected void registerEvent(Object event) {
+        this.domainEvents.add(event);
+    }
 
     @Id
     @GeneratedValue
@@ -55,7 +83,8 @@ public class UserReport extends BaseCreatedEntity {
     private Integer version;
 
     @Builder
-    public UserReport(UUID reportId, UserId reporterUserId, UserId reportedUserId, ReportReason reason, ReportStatus status, LocalDateTime reviewedAt, UUID reviewedBy, Integer version) {
+    public UserReport(UUID reportId, UserId reporterUserId, UserId reportedUserId, ReportReason reason,
+            ReportStatus status, LocalDateTime reviewedAt, UUID reviewedBy, Integer version) {
         this.reportId = reportId;
         this.reporterUserId = reporterUserId;
         this.reportedUserId = reportedUserId;
@@ -76,14 +105,25 @@ public class UserReport extends BaseCreatedEntity {
     }
 
     public void review(UUID reviewedBy) {
+        if (this.status != ReportStatus.PENDING) {
+            throw new ReportException(ReportErrorCode.ALREADY_PROCESSED);
+        }
         this.status = ReportStatus.REVIEWED;
         this.reviewedBy = reviewedBy;
         this.reviewedAt = LocalDateTime.now();
+
+        // 타 바운디드 컨텍스트(신뢰 점수 하락, 알림 발송 등)에 상태 전이를 알리기 위해 도메인 이벤트를 발행합니다.
+        registerEvent(new ReportReviewedEvent(this.reportedUserId.value()));
     }
 
     public void dismiss(UUID reviewedBy) {
+        if (this.status != ReportStatus.PENDING) {
+            throw new ReportException(ReportErrorCode.ALREADY_PROCESSED);
+        }
         this.status = ReportStatus.DISMISSED;
         this.reviewedBy = reviewedBy;
         this.reviewedAt = LocalDateTime.now();
+
+        registerEvent(new ReportDismissedEvent(this.reportedUserId.value()));
     }
 }
