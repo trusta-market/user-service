@@ -1,11 +1,10 @@
 package com.trusta_market.userservice.user.domain.entity;
 
 import com.trustamarket.common.domain.BaseUserEntity;
-import com.trusta_market.userservice.user.domain.vo.AddressId;
-import com.trusta_market.userservice.user.domain.vo.UserId;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.AddressIdConverter;
-import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
-import jakarta.persistence.Convert;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+import com.trusta_market.userservice.user.domain.exception.UserException;
+import com.trusta_market.userservice.user.domain.vo.*;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,28 +24,26 @@ import java.util.UUID;
 public class UserAddress extends BaseUserEntity {
 
     @Id
-    @Convert(converter = AddressIdConverter.class)
-    @Column(nullable = false, updatable = false)
-    private AddressId addressId;
-
-    @Convert(converter = UserIdConverter.class)
+    @Column(name = "address_id", nullable = false, updatable = false)
+    private UUID addressId;
+    
     @Column(nullable = false)
     private UserId userId;
 
     @Column(nullable = false, length = 50)
-    private String recipientName;
+    private Name recipientName;
 
     @Column(nullable = false, length = 20)
-    private String recipientPhone;
+    private PhoneNumber recipientPhone;
 
     @Column(nullable = false, length = 10)
-    private String zipCode;
+    private ZipCode zipCode;
 
     @Column(nullable = false, length = 200)
-    private String address;
+    private AddressInfo address;
 
     @Column(length = 100)
-    private String addressDetail;
+    private AddressDetail addressDetail;
 
     @Column(nullable = false)
     private boolean isDefault;
@@ -56,8 +53,11 @@ public class UserAddress extends BaseUserEntity {
     private Integer version;
 
     @Builder
-    public UserAddress(AddressId addressId, UserId userId, String recipientName, String recipientPhone, String zipCode, String address, String addressDetail, boolean isDefault, Integer version) {
-        this.addressId = addressId;
+    public UserAddress(AddressId addressId, UserId userId, Name recipientName, PhoneNumber recipientPhone, ZipCode zipCode, AddressInfo address, AddressDetail addressDetail, boolean isDefault, Integer version) {
+        if (addressId == null || userId == null || recipientName == null || recipientPhone == null || zipCode == null || address == null) {
+            throw new UserException(UserErrorCode.INVALID_INPUT);
+        }
+        this.addressId = addressId.value();
         this.userId = userId;
         this.recipientName = recipientName;
         this.recipientPhone = recipientPhone;
@@ -68,7 +68,11 @@ public class UserAddress extends BaseUserEntity {
         this.version = version;
     }
 
-    public static UserAddress create(UserId userId, String recipientName, String recipientPhone, String zipCode, String address, String addressDetail, boolean isDefault) {
+    public AddressId getAddressId() {
+        return addressId != null ? AddressId.of(addressId) : null;
+    }
+
+    public static UserAddress create(UserId userId, Name recipientName, PhoneNumber recipientPhone, ZipCode zipCode, AddressInfo address, AddressDetail addressDetail, boolean isDefault) {
         return UserAddress.builder()
                 .addressId(AddressId.of(UUID.randomUUID()))
                 .userId(userId)
@@ -81,7 +85,7 @@ public class UserAddress extends BaseUserEntity {
                 .build();
     }
 
-    public void update(String recipientName, String recipientPhone, String zipCode, String address, String addressDetail) {
+    public void update(Name recipientName, PhoneNumber recipientPhone, ZipCode zipCode, AddressInfo address, AddressDetail addressDetail) {
         if (recipientName != null) this.recipientName = recipientName;
         if (recipientPhone != null) this.recipientPhone = recipientPhone;
         if (zipCode != null) this.zipCode = zipCode;
