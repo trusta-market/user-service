@@ -25,7 +25,7 @@ public class UserAccountRepositoryImpl implements UserAccountRepository {
 
     @Override
     public Optional<UserAccount> findById(UUID accountId) {
-        return userAccountJpaRepository.findById(accountId);
+        return userAccountJpaRepository.findByAccountIdAndDeletedAtIsNull(accountId);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class UserAccountRepositoryImpl implements UserAccountRepository {
 
     @Override
     public Optional<UserAccount> findDefaultAccountByUserId(UUID userId) {
-        return userAccountJpaRepository.findByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
+        return userAccountJpaRepository.findReadOnlyByUserIdAndIsDefaultTrueAndDeletedAtIsNull(userId);
     }
 
     @Transactional
