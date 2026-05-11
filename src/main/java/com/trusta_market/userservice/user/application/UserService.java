@@ -35,11 +35,9 @@ import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.user.domain.exception.AccountErrorCode;
-import com.trusta_market.userservice.user.domain.exception.AddressErrorCode;
-import com.trusta_market.userservice.user.domain.exception.DomainException;
-import com.trusta_market.userservice.user.domain.exception.InternalErrorCode;
-import com.trusta_market.userservice.user.domain.exception.ReportErrorCode;
+import com.trusta_market.userservice.report.domain.exception.ReportException;
+import com.trusta_market.userservice.report.domain.exception.ReportErrorCode;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,10 +71,10 @@ public class UserService {
 
     public UserResult createUser(CreateUserCommand command) {
         if (userRepository.existsByEmail(command.email())) {
-            throw new DomainException(UserErrorCode.DUPLICATE_EMAIL);
+            throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
         }
         if (userRepository.existsByNickname(command.nickname())) {
-            throw new DomainException(UserErrorCode.DUPLICATE_NICKNAME);
+            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
 
         User savedUser = userRepository.save(
@@ -100,7 +98,7 @@ public class UserService {
         assertUserCanMutate(user);
         if (command.nickname() != null && !command.nickname().equals(user.getNickname())
                 && userRepository.existsByNickname(command.nickname())) {
-            throw new DomainException(UserErrorCode.DUPLICATE_NICKNAME);
+            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
         user.updateProfile(command.nickname(), command.realName());
         return UserResult.from(userRepository.save(user));
@@ -109,7 +107,7 @@ public class UserService {
     public void withdrawUser(KeycloakId keycloakId) {
         User user = findUserByKeycloakId(keycloakId);
         if (user.isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         user.delete(user.getUserId().value()); // Self deletion
         userRepository.save(user);
@@ -129,7 +127,7 @@ public class UserService {
         User user = findUserById(command.userId());
         assertUserCanMutate(user);
         if (userAddressRepository.countActiveAddressesByUserId(UserId.of(command.userId())) >= 10) {
-            throw new DomainException(AddressErrorCode.ADDRESS_LIMIT_EXCEEDED);
+            throw new UserException(UserErrorCode.ADDRESS_LIMIT_EXCEEDED);
         }
 
         boolean makeDefault = userAddressRepository.countActiveAddressesByUserId(UserId.of(command.userId())) == 0;
@@ -187,7 +185,7 @@ public class UserService {
         User user = findUserById(command.userId());
         assertUserCanMutate(user);
         if (userAccountRepository.countActiveAccountsByUserId(UserId.of(command.userId())) >= 5) {
-            throw new DomainException(AccountErrorCode.ACCOUNT_LIMIT_EXCEEDED);
+            throw new UserException(UserErrorCode.ACCOUNT_LIMIT_EXCEEDED);
         }
 
         boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(UserId.of(command.userId())) == 0;
@@ -219,7 +217,7 @@ public class UserService {
         assertUserCanMutate(user);
         UserAccount account = findOwnedAccount(userId, accountId);
         if (!account.isVerified()) {
-            throw new DomainException(AccountErrorCode.ACCOUNT_NOT_VERIFIED);
+            throw new UserException(UserErrorCode.ACCOUNT_NOT_VERIFIED);
         }
         userAccountRepository.clearDefaultAccount(UserId.of(userId));
         account.setDefault(true);
@@ -229,13 +227,13 @@ public class UserService {
     public ReportResult createReport(CreateReportCommand command) {
         assertUserCanMutate(findUserById(command.reporterUserId()));
         if (command.reporterUserId().equals(command.reportedUserId())) {
-            throw new DomainException(ReportErrorCode.SELF_REPORT);
+            throw new ReportException(ReportErrorCode.SELF_REPORT);
         }
         findUserById(command.reporterUserId());
         findUserById(command.reportedUserId());
         if (userReportRepository.existsByReporterUserIdAndReportedUserId(UserId.of(command.reporterUserId()),
                 UserId.of(command.reportedUserId()))) {
-            throw new DomainException(ReportErrorCode.DUPLICATE_REPORT);
+            throw new ReportException(ReportErrorCode.DUPLICATE_REPORT);
         }
 
         return ReportResult.from(userReportRepository.save(
@@ -332,7 +330,7 @@ public class UserService {
     public void validateInternalUser(UUID userId) {
         User user = findUserById(userId);
         if (user.getUserStatus() != UserStatus.APPROVED) {
-            throw new DomainException(InternalErrorCode.USER_NOT_ACTIVE);
+            throw new UserException(UserErrorCode.USER_NOT_ACTIVE);
         }
     }
 
@@ -353,61 +351,61 @@ public class UserService {
     @Transactional(readOnly = true)
     public AccountInternalResult getDefaultAccount(UUID userId) {
         UserAccount account = userAccountRepository.findDefaultAccountByUserId(UserId.of(userId))
-                .orElseThrow(() -> new DomainException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.ACCOUNT_NOT_FOUND));
         if (!account.isVerified()) {
-            throw new DomainException(AccountErrorCode.ACCOUNT_NOT_VERIFIED);
+            throw new UserException(UserErrorCode.ACCOUNT_NOT_VERIFIED);
         }
         return AccountInternalResult.from(account);
     }
 
     private User findUserByKeycloakId(KeycloakId keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId)
-                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         if (user.isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         return user;
     }
 
     private User findUserById(UUID userId) {
         User user = userRepository.findById(UserId.of(userId))
-                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         if (user.isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         return user;
     }
 
     private void assertUserCanMutate(User user) {
         if (user.getUserStatus() == UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.PENDING_USER);
+            throw new UserException(UserErrorCode.PENDING_USER);
         }
         if (user.getUserStatus() == UserStatus.REJECTED) {
-            throw new DomainException(UserErrorCode.REJECTED_USER);
+            throw new UserException(UserErrorCode.REJECTED_USER);
         }
         if (user.getUserStatus() == UserStatus.SUSPENDED) {
-            throw new DomainException(UserErrorCode.SUSPENDED_USER);
+            throw new UserException(UserErrorCode.SUSPENDED_USER);
         }
     }
 
     private UserAddress findOwnedAddress(UUID userId, UUID addressId) {
         return userAddressRepository.findActiveAddressByIdAndUserId(AddressId.of(addressId), UserId.of(userId))
-                .orElseThrow(() -> new DomainException(AddressErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new AddressException(AddressErrorCode.ADDRESS_NOT_FOUND));
     }
 
     private UserAccount findOwnedAccount(UUID userId, UUID accountId) {
         return userAccountRepository.findActiveAccountByIdAndUserId(accountId, UserId.of(userId))
-                .orElseThrow(() -> new DomainException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private UserAccount findAccountById(UUID accountId) {
         return userAccountRepository.findById(accountId)
-                .orElseThrow(() -> new DomainException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private UserReport findReportById(UUID reportId) {
         return userReportRepository.findById(reportId)
-                .orElseThrow(() -> new DomainException(ReportErrorCode.REPORT_NOT_FOUND));
+                .orElseThrow(() -> new ReportException(ReportErrorCode.REPORT_NOT_FOUND));
     }
 
     private DomainPage<User> pageUsers(int page, int size, UserStatus userStatus, Role role) {

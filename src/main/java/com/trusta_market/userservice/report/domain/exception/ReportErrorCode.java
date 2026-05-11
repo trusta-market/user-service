@@ -3,7 +3,7 @@ package com.trusta_market.userservice.report.domain.exception;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-// 신고 도메인 전용 에러 코드 정의 (프레임워크 독립적)
+// 신고 도메인 전역에서 사용하는 에러 코드 정의 (프레임워크 독립적)
 @Getter
 @RequiredArgsConstructor
 public enum ReportErrorCode {
@@ -16,4 +16,8 @@ public enum ReportErrorCode {
     private final int status;
     private final String code;
     private final String message;
+
+    public String getField() {
+        return null;
+    }
 }

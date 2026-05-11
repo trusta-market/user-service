@@ -8,14 +8,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum UserErrorCode {
     // User Basic
-    USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
-    DUPLICATE_EMAIL(400, "U002", "이미 사용 중인 이메일입니다."),
-    DUPLICATE_NICKNAME(400, "U003", "이미 사용 중인 이름입니다."),
-    ALREADY_WITHDRAWN(400, "U004", "이미 탈퇴한 회원입니다."),
-    PENDING_USER(403, "U005", "승인 대기 중인 회원입니다."),
-    REJECTED_USER(403, "U006", "가입 신청이 거절된 회원입니다."),
-    SUSPENDED_USER(403, "U007", "정지된 회원입니다."),
-    USER_NOT_ACTIVE(403, "U008", "활성화된 사용자가 아닙니다."),
+    USER_NOT_FOUND(404, "U002", "사용자를 찾을 수 없습니다."),
+    DUPLICATE_EMAIL(400, "U003", "이미 사용 중인 이메일입니다."),
+    DUPLICATE_NICKNAME(400, "U004", "이미 사용 중인 이름입니다."),
+    ALREADY_WITHDRAWN(400, "U005", "이미 탈퇴한 회원입니다."),
+    PENDING_USER(403, "U006", "승인 대기 중인 회원입니다."),
+    REJECTED_USER(403, "U007", "가입 신청이 거절된 회원입니다."),
+    SUSPENDED_USER(403, "U008", "정지된 회원입니다."),
+    USER_NOT_ACTIVE(403, "U001", "활성화된 사용자가 아닙니다."),
+    INVALID_STATUS_TRANSITION(400, "U013", "변경 불가능한 유저 상태입니다."),
 
     // Validation
     INVALID_EMAIL_FORMAT(400, "V001", "올바르지 않은 이메일 형식입니다."),
@@ -23,7 +24,6 @@ public enum UserErrorCode {
     INVALID_PHONE_FORMAT(400, "V003", "올바르지 않은 전화번호 형식입니다."),
     INVALID_ZIP_CODE(400, "V004", "올바르지 않은 우편번호 형식입니다."),
     INVALID_INPUT(400, "V005", "올바르지 않은 입력값입니다."),
-    INVALID_STATUS_TRANSITION(400, "V006", "변경 불가능한 유저 상태입니다."),
     INVALID_REALNAME_FORMAT(400, "V007", "올바르지 않은 실명 형식입니다."),
 
     // Address

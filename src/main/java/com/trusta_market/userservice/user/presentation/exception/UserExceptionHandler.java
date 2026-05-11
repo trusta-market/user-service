@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.user.presentation.exception;
 
 import com.trusta_market.userservice.user.domain.exception.UserException;
-import com.trustamarket.common.dto.CommonResponse;
+import com.trustamarket.common.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UserExceptionHandler {
 
     @ExceptionHandler(UserException.class)
-    public ResponseEntity<CommonResponse<Void>> handleUserException(UserException e) {
+    public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
         log.error("User Domain Exception: {}", e.getMessage());
         UserErrorCodeAdapter adapter = UserErrorCodeAdapter.of(e.getErrorCode());
         return ResponseEntity
                 .status(adapter.getStatus())
-                .body(CommonResponse.error(adapter));
+                .body(ErrorResponse.of(adapter));
     }
 }
