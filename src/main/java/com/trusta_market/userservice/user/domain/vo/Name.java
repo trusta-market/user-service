@@ -6,7 +6,7 @@ public record Name(String value) {
     public Name {
         value = value != null ? value.trim() : null;
         if (value == null || value.isEmpty() || value.length() < 2 || value.length() > 20) {
-            throw new UserException(UserErrorCode.INVALID_NAME);
+            throw new UserException(UserErrorCode.INVALID_NAME_FORMAT);
         }
     }
 

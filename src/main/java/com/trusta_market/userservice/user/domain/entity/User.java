@@ -44,7 +44,7 @@ public class User extends BaseUserEntity {
     @Column(nullable = false, unique = true, length = 100)
     private Email email;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private Name name;
 
     @Enumerated(EnumType.STRING)
@@ -81,7 +81,7 @@ public class User extends BaseUserEntity {
         this.email = email;
         this.name = name;
         this.role = role != null ? role : Role.MEMBER;
-        this.userStatus = userStatus != null ? userStatus : UserStatus.APPROVED;
+        this.userStatus = userStatus != null ? userStatus : UserStatus.PENDING;
         this.membership = membership != null ? membership : Membership.BRONZE;
         this.slackId = slackId;
         this.version = version;
