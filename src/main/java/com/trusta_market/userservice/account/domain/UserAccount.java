@@ -4,9 +4,18 @@ import com.trusta_market.userservice.account.domain.vo.AccountHolder;
 import com.trusta_market.userservice.account.domain.vo.AccountNumber;
 import com.trusta_market.userservice.account.domain.vo.AccountType;
 import com.trusta_market.userservice.account.domain.vo.BankCode;
+import com.trusta_market.userservice.account.domain.exception.AccountErrorCode;
+import com.trusta_market.userservice.account.domain.exception.AccountException;
 
 import com.trustamarket.common.domain.BaseUserEntity;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,6 +24,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
