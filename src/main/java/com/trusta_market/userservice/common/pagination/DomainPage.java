@@ -29,7 +29,9 @@ public record DomainPage<T>(
     }
 
     public <U> DomainPage<U> map(Function<? super T, ? extends U> converter) {
-        List<U> convertedContent = this.content.stream().map(converter).toList();
+        List<U> convertedContent = this.content.stream()
+                .<U>map(converter)
+                .toList();
         return new DomainPage<>(convertedContent, page, size, totalElements);
     }
 }

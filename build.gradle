@@ -14,8 +14,8 @@ java {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
+    mavenLocal()
     maven {
         url = uri("https://maven.pkg.github.com/trusta-market/common")
         credentials {
@@ -23,7 +23,6 @@ repositories {
             password = findProperty('gpr.token') ?: System.getenv('GPR_TOKEN')
         }
     }
-    maven { url = uri('https://repo.spring.io/release') }
 }
 
 ext {
@@ -45,6 +44,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     implementation 'com.trustamarket:common:0.0.1-SNAPSHOT'
+    implementation 'org.keycloak:keycloak-admin-client:26.0.9'
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'
