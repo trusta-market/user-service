@@ -16,7 +16,8 @@ import com.trusta_market.userservice.user.application.port.in.UserValidationUseC
 import com.trusta_market.userservice.user.application.port.out.IdentityProviderPort;
 import com.trusta_market.userservice.user.application.port.out.UserAddressRepository;
 import com.trusta_market.userservice.user.application.port.out.UserRepository;
-import com.trusta_market.userservice.user.application.port.out.WalletPort;
+import com.trusta_market.userservice.user.domain.event.UserCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
@@ -38,16 +39,16 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     private final UserRepository userRepository;
     private final UserAddressRepository userAddressRepository;
     private final IdentityProviderPort identityProviderPort;
-    private final WalletPort walletPort;
+    private final ApplicationEventPublisher eventPublisher;
 
     public UserService(UserRepository userRepository, 
                        UserAddressRepository userAddressRepository,
                        IdentityProviderPort identityProviderPort,
-                       WalletPort walletPort) {
+                       ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.userAddressRepository = userAddressRepository;
         this.identityProviderPort = identityProviderPort;
-        this.walletPort = walletPort;
+        this.eventPublisher = eventPublisher;
     }
 
     // 통합 회원가입 (Keycloak 계정 생성 + 로컬 프로필 생성)
@@ -68,8 +69,8 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         User user = User.create(keycloakId, email, name);
         User savedUser = userRepository.save(user);
 
-        // 지갑 생성 요청
-        walletPort.createWallet(savedUser.getUserId());
+        // 도메인 이벤트 발행 (지갑 생성 등 후속 처리 트리거)
+        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getEmail(), savedUser.getName()));
 
         return UserResult.from(savedUser);
     }
@@ -86,8 +87,8 @@ public class UserService implements UserUseCase, UserValidationUseCase {
 
         User savedUser = userRepository.save(User.create(command.keycloakId(), command.email(), command.name()));
         
-        // 지갑 생성 요청
-        walletPort.createWallet(savedUser.getUserId());
+        // 도메인 이벤트 발행 (지갑 생성 등 후속 처리 트리거)
+        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getEmail(), savedUser.getName()));
         
         return UserResult.from(savedUser);
     }

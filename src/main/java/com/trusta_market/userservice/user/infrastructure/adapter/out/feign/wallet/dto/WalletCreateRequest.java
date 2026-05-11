@@ -6,4 +6,7 @@ import java.util.UUID;
  * Wallet 서비스 지갑 생성 API 요청 DTO
  */
 public record WalletCreateRequest(UUID userId) {
+    public WalletCreateRequest {
+        java.util.Objects.requireNonNull(userId, "userId must not be null");
+    }
 }
