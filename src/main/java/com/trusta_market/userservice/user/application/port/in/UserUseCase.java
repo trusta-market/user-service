@@ -8,14 +8,12 @@ import com.trusta_market.userservice.user.application.dto.command.UpdateAddressC
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
 import com.trusta_market.userservice.user.application.dto.result.AddressResult;
 import com.trusta_market.userservice.user.application.dto.result.UserResult;
-import com.trusta_market.userservice.user.application.dto.result.internal.MembershipResult;
 import com.trusta_market.userservice.user.application.dto.result.internal.UserInternalResult;
 import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,10 +36,6 @@ public interface UserUseCase {
 
     UserResult rejectUser(UUID userId, String reason);
 
-    UserResult suspendUser(UUID userId, String reason, LocalDateTime expiresAt);
-
-    UserResult unsuspendUser(UUID userId, String reason);
-
     List<AddressResult> getAddressList(UUID userId);
 
     AddressResult createAddress(CreateAddressCommand command);
@@ -57,6 +51,4 @@ public interface UserUseCase {
     List<UserInternalResult> getInternalUserList(List<UUID> userIds);
 
     void validateInternalUser(UUID userId);
-
-    MembershipResult getMembership(UUID userId);
 }

@@ -1,5 +1,6 @@
 package com.trusta_market.userservice.user.presentation;
 
+import com.trusta_market.userservice.membership.application.port.in.MembershipUseCase;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.presentation.dto.response.internal.MembershipInternalResponse;
 import com.trusta_market.userservice.user.presentation.dto.response.internal.UserInternalResponse;
@@ -16,9 +17,12 @@ import java.util.UUID;
 public class InternalUserApiController {
 
     private final UserUseCase userUseCase;
+    private final MembershipUseCase membershipUseCase;
 
-    public InternalUserApiController(UserUseCase userUseCase) {
+    public InternalUserApiController(UserUseCase userUseCase,
+                                     MembershipUseCase membershipUseCase) {
         this.userUseCase = userUseCase;
+        this.membershipUseCase = membershipUseCase;
     }
 
     // 단건 유저 내부 정보 조회
@@ -46,7 +50,7 @@ public class InternalUserApiController {
     // 유저 멤버십 정보 조회
     @GetMapping("/{userId}/membership")
     public ResponseEntity<MembershipInternalResponse> getMembership(@PathVariable UUID userId) {
-        var result = userUseCase.getMembership(userId);
+        var result = membershipUseCase.getMembership(userId);
         return ResponseEntity.ok(MembershipInternalResponse.from(result));
     }
 }

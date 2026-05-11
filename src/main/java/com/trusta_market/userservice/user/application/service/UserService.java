@@ -9,7 +9,6 @@ import com.trusta_market.userservice.user.application.dto.command.UpdateAddressC
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
 import com.trusta_market.userservice.user.application.dto.result.AddressResult;
 import com.trusta_market.userservice.user.application.dto.result.UserResult;
-import com.trusta_market.userservice.user.application.dto.result.internal.MembershipResult;
 import com.trusta_market.userservice.user.application.dto.result.internal.UserInternalResult;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.application.port.in.UserValidationUseCase;
@@ -26,7 +25,6 @@ import com.trusta_market.userservice.user.domain.vo.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -246,22 +244,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         return UserResult.from(userRepository.save(user));
     }
 
-    // 관리자: 유저 정지
-    @Override
-    public UserResult suspendUser(UUID userId, String reason, LocalDateTime expiresAt) {
-        User user = findUserById(userId);
-        user.suspend();
-        return UserResult.from(userRepository.save(user));
-    }
-
-    // 관리자: 유저 정지 해제
-    @Override
-    public UserResult unsuspendUser(UUID userId, String reason) {
-        User user = findUserById(userId);
-        user.unsuspend();
-        return UserResult.from(userRepository.save(user));
-    }
-
     // 타 서비스용: 유저 내부 정보 조회
     @Override
     @Transactional(readOnly = true)
@@ -286,13 +268,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         if (user.getUserStatus() != UserStatus.APPROVED) {
             throw new UserException(UserErrorCode.USER_NOT_ACTIVE);
         }
-    }
-
-    // 유저 멤버십 정보 조회
-    @Override
-    @Transactional(readOnly = true)
-    public MembershipResult getMembership(UUID userId) {
-        return MembershipResult.from(findUserById(userId));
     }
 
     // Keycloak ID 기반 유저 검색 헬퍼

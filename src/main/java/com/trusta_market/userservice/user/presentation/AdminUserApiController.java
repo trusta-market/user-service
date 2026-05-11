@@ -1,5 +1,6 @@
 package com.trusta_market.userservice.user.presentation;
 
+import com.trusta_market.userservice.suspension.application.port.in.SuspensionUseCase;
 import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.domain.vo.Role;
@@ -20,9 +21,12 @@ import java.util.UUID;
 public class AdminUserApiController {
 
     private final UserUseCase userUseCase;
+    private final SuspensionUseCase suspensionUseCase;
 
-    public AdminUserApiController(UserUseCase userUseCase) {
+    public AdminUserApiController(UserUseCase userUseCase,
+                                  SuspensionUseCase suspensionUseCase) {
         this.userUseCase = userUseCase;
+        this.suspensionUseCase = suspensionUseCase;
     }
 
     // 유저 목록 페이징 조회 API
@@ -60,14 +64,16 @@ public class AdminUserApiController {
     // 유저 활동 정지 API
     @PostMapping("/{userId}/suspend")
     public ResponseEntity<GetUserResponse> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
-        var result = userUseCase.suspendUser(userId, request.reason(), request.expiresAt());
+        suspensionUseCase.suspendUser(userId, request.reason(), request.expiresAt());
+        var result = userUseCase.getUser(userId);
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
     // 유저 활동 정지 해제 API
     @PatchMapping("/{userId}/unsuspend")
     public ResponseEntity<GetUserResponse> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
-        var result = userUseCase.unsuspendUser(userId, request.reason());
+        suspensionUseCase.unsuspendUser(userId, request.reason());
+        var result = userUseCase.getUser(userId);
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 }
