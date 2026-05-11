@@ -29,8 +29,7 @@ import com.trusta_market.userservice.user.domain.repository.UserAddressRepositor
 import com.trusta_market.userservice.user.domain.repository.UserRepository;
 import com.trusta_market.userservice.user.domain.vo.AddressId;
 import com.trusta_market.userservice.user.domain.vo.Email;
-import com.trusta_market.userservice.user.domain.vo.Nickname;
-import com.trusta_market.userservice.user.domain.vo.Realname;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
@@ -78,7 +77,7 @@ public class UserService {
         }
 
         User savedUser = userRepository.save(
-                User.create(command.keycloakId(), command.email(), command.realName(), command.nickname()));
+                User.create(command.keycloakId(), command.email(), Name.of(command.nickname())));
         trustScoreRepository.save(TrustScore.create(savedUser.getUserId()));
         return UserResult.from(savedUser);
     }
@@ -96,11 +95,11 @@ public class UserService {
     public UserResult updateUser(KeycloakId keycloakId, UpdateUserCommand command) {
         User user = findUserByKeycloakId(keycloakId);
         assertUserCanMutate(user);
-        if (command.nickname() != null && !command.nickname().equals(user.getNickname())
+        if (command.nickname() != null && !command.nickname().equals(user.getName().value())
                 && userRepository.existsByNickname(command.nickname())) {
             throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
-        user.updateProfile(command.nickname(), command.realName());
+        user.updateProfile(Name.of(command.nickname()));
         return UserResult.from(userRepository.save(user));
     }
 
@@ -390,17 +389,17 @@ public class UserService {
 
     private UserAddress findOwnedAddress(UUID userId, UUID addressId) {
         return userAddressRepository.findActiveAddressByIdAndUserId(AddressId.of(addressId), UserId.of(userId))
-                .orElseThrow(() -> new AddressException(AddressErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.ADDRESS_NOT_FOUND));
     }
 
     private UserAccount findOwnedAccount(UUID userId, UUID accountId) {
         return userAccountRepository.findActiveAccountByIdAndUserId(accountId, UserId.of(userId))
-                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private UserAccount findAccountById(UUID accountId) {
         return userAccountRepository.findById(accountId)
-                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
+                .orElseThrow(() -> new UserException(UserErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private UserReport findReportById(UUID reportId) {
