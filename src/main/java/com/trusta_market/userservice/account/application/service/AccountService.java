@@ -127,6 +127,16 @@ public class AccountService implements AccountUseCase {
         userAccountRepository.save(account);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public AccountResult getVerifiedDefaultAccount(UUID userId) {
+        UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
+        return userAccountRepository.findDefaultAccountByUserId(internalUserId)
+                .filter(UserAccount::isVerified) // 인증된 계좌만 필터링
+                .map(AccountResult::from)
+                .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_VERIFIED));
+    }
+
     private UserAccount findOwnedAccount(UUID userId, UUID accountId) {
         return userAccountRepository.findActiveAccountByIdAndUserId(accountId, userId)
                 .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));

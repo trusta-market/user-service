@@ -16,4 +16,7 @@ public interface AccountUseCase {
     // Admin features
     void verifyAccount(UUID accountId);
     void rejectAccount(UUID accountId, String reason);
+
+    // Internal service features
+    AccountResult getVerifiedDefaultAccount(UUID userId);
 }

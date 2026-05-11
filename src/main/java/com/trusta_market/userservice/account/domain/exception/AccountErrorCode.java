@@ -10,7 +10,8 @@ public enum AccountErrorCode implements ErrorCodeSpec {
     INVALID_ACCOUNT_NUMBER(HttpStatus.BAD_REQUEST, "A004", "올바르지 않은 계좌 번호입니다."),
     INVALID_ACCOUNT_HOLDER(HttpStatus.BAD_REQUEST, "A005", "올바르지 않은 예금주명입니다."),
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "A006", "잘못된 입력값입니다."),
-    VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "A007", "계좌 실명 인증에 실패했습니다.");
+    VERIFICATION_FAILED(HttpStatus.BAD_REQUEST, "A007", "계좌 실명 인증에 실패했습니다."),
+    ACCOUNT_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "A008", "인증되지 않은 계좌입니다.");
 
     private final HttpStatus status;
     private final String code;
