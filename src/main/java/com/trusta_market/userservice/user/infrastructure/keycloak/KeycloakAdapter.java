@@ -4,6 +4,8 @@ import com.trusta_market.userservice.user.application.port.out.IdentityProviderP
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Name;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
@@ -72,17 +74,17 @@ public class KeycloakAdapter implements IdentityProviderPort {
             System.out.println(">>> Keycloak 응답 상태: " + response.getStatus());
             
             if (response.getStatus() == 409) {
-                throw new RuntimeException("이미 존재하는 이메일입니다.");
+                throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
             }
             
             if (response.getStatus() != 201) {
                 String errorEntity = response.hasEntity() ? response.readEntity(String.class) : "no entity";
                 System.out.println(">>> Keycloak 생성 실패 상세: " + errorEntity);
-                throw new RuntimeException("Keycloak 사용자 생성 실패: " + response.getStatus() + " " + errorEntity);
+                throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
             if (response.getLocation() == null) {
-                throw new RuntimeException("Keycloak 응답에 Location 헤더가 없습니다.");
+                throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
             // 생성된 유저의 ID 추출 (Location 헤더에서 가져옴)

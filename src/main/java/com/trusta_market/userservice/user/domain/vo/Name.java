@@ -2,7 +2,6 @@ package com.trusta_market.userservice.user.domain.vo;
 
 import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
-
 public record Name(String value) {
     public Name {
         value = value != null ? value.trim() : null;

@@ -4,9 +4,6 @@ import com.trusta_market.userservice.account.domain.vo.AccountHolder;
 import com.trusta_market.userservice.account.domain.vo.AccountNumber;
 import com.trusta_market.userservice.account.domain.vo.AccountType;
 import com.trusta_market.userservice.account.domain.vo.BankCode;
-import com.trusta_market.userservice.account.domain.exception.AccountErrorCode;
-import com.trusta_market.userservice.account.domain.exception.AccountException;
-
 import com.trustamarket.common.domain.BaseUserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +21,6 @@ import org.hibernate.annotations.UuidGenerator;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -84,9 +80,6 @@ public class UserAccount extends BaseUserEntity {
     }
 
     public static UserAccount create(UUID userId, BankCode bankCode, AccountNumber accountNumber, AccountHolder accountHolder, AccountType accountType, boolean isDefault, boolean isVerified) {
-        if (userId == null || bankCode == null || accountNumber == null || accountHolder == null || accountType == null) {
-            throw new AccountException(AccountErrorCode.INVALID_INPUT);
-        }
         return UserAccount.builder()
                 .userId(userId)
                 .bankCode(bankCode)
@@ -107,9 +100,6 @@ public class UserAccount extends BaseUserEntity {
     }
 
     public void approve(UUID approvedBy) {
-        if (approvedBy == null) {
-            throw new AccountException(AccountErrorCode.INVALID_INPUT);
-        }
         this.isVerified = true;
         this.approvedBy = approvedBy;
         this.approvedAt = LocalDateTime.now();

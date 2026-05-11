@@ -3,6 +3,9 @@ package com.trusta_market.userservice.common.pagination;
 import java.util.List;
 import java.util.function.Function;
 
+import com.trusta_market.userservice.common.exception.DomainException;
+import com.trusta_market.userservice.common.exception.CommonErrorCode;
+
 public record DomainPage<T>(
     List<T> content,
     int page,
@@ -11,16 +14,16 @@ public record DomainPage<T>(
 ) {
     public DomainPage {
         if (content == null) {
-            throw new IllegalArgumentException("Content cannot be null");
+            throw new DomainException(CommonErrorCode.INVALID_INPUT);
         }
         if (page < 0) {
-            throw new IllegalArgumentException("Page index cannot be less than zero");
+            throw new DomainException(CommonErrorCode.INVALID_INPUT);
         }
         if (size <= 0) {
-            throw new IllegalArgumentException("Page size must be greater than zero");
+            throw new DomainException(CommonErrorCode.INVALID_INPUT);
         }
         if (totalElements < 0) {
-            throw new IllegalArgumentException("Total elements cannot be less than zero");
+            throw new DomainException(CommonErrorCode.INVALID_INPUT);
         }
     }
 
@@ -29,7 +32,7 @@ public record DomainPage<T>(
     }
 
     public <U> DomainPage<U> map(Function<? super T, ? extends U> converter) {
-        List<U> convertedContent = this.content.stream().map(t -> (U) converter.apply(t)).toList();
+        List<U> convertedContent = this.content.stream().map(converter).map(u -> (U) u).toList();
         return new DomainPage<>(convertedContent, page, size, totalElements);
     }
 }

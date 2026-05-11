@@ -19,10 +19,10 @@ public record AddressResult(
         return new AddressResult(
             address.getAddressId().value(),
             address.getUserId().value(),
-            address.getRecipientName().value(),
-            address.getRecipientPhone().value(),
-            address.getZipCode().value(),
-            address.getAddress().value(),
+            address.getRecipientName() != null ? address.getRecipientName().value() : null,
+            address.getRecipientPhone() != null ? address.getRecipientPhone().value() : null,
+            address.getZipCode() != null ? address.getZipCode().value() : null,
+            address.getAddress() != null ? address.getAddress().value() : null,
             address.getAddressDetail() != null ? address.getAddressDetail().value() : null,
             address.isDefault()
         );

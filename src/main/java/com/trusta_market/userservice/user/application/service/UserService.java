@@ -16,6 +16,7 @@ import com.trusta_market.userservice.user.application.port.in.UserValidationUseC
 import com.trusta_market.userservice.user.application.port.out.IdentityProviderPort;
 import com.trusta_market.userservice.user.application.port.out.UserAddressRepository;
 import com.trusta_market.userservice.user.application.port.out.UserRepository;
+import com.trusta_market.userservice.user.application.port.out.WalletPort;
 import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.entity.UserAddress;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
@@ -37,13 +38,16 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     private final UserRepository userRepository;
     private final UserAddressRepository userAddressRepository;
     private final IdentityProviderPort identityProviderPort;
+    private final WalletPort walletPort;
 
     public UserService(UserRepository userRepository, 
                        UserAddressRepository userAddressRepository,
-                       IdentityProviderPort identityProviderPort) {
+                       IdentityProviderPort identityProviderPort,
+                       WalletPort walletPort) {
         this.userRepository = userRepository;
         this.userAddressRepository = userAddressRepository;
         this.identityProviderPort = identityProviderPort;
+        this.walletPort = walletPort;
     }
 
     // 통합 회원가입 (Keycloak 계정 생성 + 로컬 프로필 생성)
@@ -64,6 +68,9 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         User user = User.create(keycloakId, email, name);
         User savedUser = userRepository.save(user);
 
+        // 지갑 생성 요청
+        walletPort.createWallet(savedUser.getUserId());
+
         return UserResult.from(savedUser);
     }
 
@@ -78,6 +85,10 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         }
 
         User savedUser = userRepository.save(User.create(command.keycloakId(), command.email(), command.name()));
+        
+        // 지갑 생성 요청
+        walletPort.createWallet(savedUser.getUserId());
+        
         return UserResult.from(savedUser);
     }
 

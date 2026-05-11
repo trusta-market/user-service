@@ -19,7 +19,7 @@ public record UserInternalResponse(
         return new UserInternalResponse(
                 result.userId(),
                 result.email(),
-                result.username(),
+                result.name(),
                 result.role(),
                 result.userStatus(),
                 result.membership()
