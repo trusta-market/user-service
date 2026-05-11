@@ -39,6 +39,9 @@ public enum UserErrorCode implements ErrorCodeSpec {
     ACCOUNT_NOT_FOUND(HttpStatus.NOT_FOUND, "AC01", "계좌 정보를 찾을 수 없습니다."),
     ACCOUNT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "AC02", "계좌 생성 한도(5개)를 초과했습니다."),
     ACCOUNT_NOT_VERIFIED(HttpStatus.BAD_REQUEST, "AC03", "인증되지 않은 계좌입니다."),
+    INVALID_ACCOUNT_HOLDER(HttpStatus.BAD_REQUEST, "AC04", "올바르지 않은 예금주 형식입니다."),
+    INVALID_ACCOUNT_NUMBER(HttpStatus.BAD_REQUEST, "AC05", "올바르지 않은 계좌번호 형식입니다."),
+    INVALID_BANK_CODE(HttpStatus.BAD_REQUEST, "AC06", "올바르지 않은 은행 코드입니다."),
 
     // Internal Infrastructure
     KEYCLOAK_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "I001", "인증 서버 연동에 실패했습니다.");

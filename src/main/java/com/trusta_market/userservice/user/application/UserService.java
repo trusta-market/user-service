@@ -72,7 +72,7 @@ public class UserService {
         if (userRepository.existsByEmail(command.email())) {
             throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
         }
-        if (userRepository.existsByNickname(command.nickname())) {
+        if (userRepository.existsByName(Name.of(command.nickname()))) {
             throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
 
@@ -96,7 +96,7 @@ public class UserService {
         User user = findUserByKeycloakId(keycloakId);
         assertUserCanMutate(user);
         if (command.nickname() != null && !command.nickname().equals(user.getName().value())
-                && userRepository.existsByNickname(command.nickname())) {
+                && userRepository.existsByName(Name.of(command.nickname()))) {
             throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
         user.updateProfile(Name.of(command.nickname()));
