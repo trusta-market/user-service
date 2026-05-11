@@ -1,0 +1,20 @@
+package com.trusta_market.userservice.report.infrastructure.persistence.jpa;
+
+import com.trusta_market.userservice.report.domain.UserReport;
+import com.trusta_market.userservice.report.domain.vo.ReportStatus;
+import com.trusta_market.userservice.user.domain.vo.UserId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+// 사용자 신고 JPA 리포지토리
+public interface UserReportJpaRepository extends JpaRepository<UserReport, UUID> {
+    // 중복 신고 여부 확인
+    boolean existsByReporterUserIdAndReportedUserId(UserId reporterUserId, UserId reportedUserId);
+    // 상태별 페이징 조회
+    Page<UserReport> findAllByStatus(ReportStatus status, Pageable pageable);
+    // 특정 신고자의 전체 신고 내역 조회
+    java.util.List<UserReport> findAllByReporterUserId(UserId reporterUserId);
+}
