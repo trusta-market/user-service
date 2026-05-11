@@ -3,7 +3,7 @@ package com.trusta_market.userservice.user.domain.vo;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 
 public record Email(String value) {
@@ -13,11 +13,11 @@ public record Email(String value) {
 
     public Email {
         if (value == null || value.trim().isBlank()) {
-            throw new DomainException(UserErrorCode.INVALID_EMAIL_FORMAT);
+            throw new UserException(UserErrorCode.INVALID_EMAIL_FORMAT);
         }
         String normalized = value.trim().toLowerCase(Locale.ROOT);
         if (!EMAIL_PATTERN.matcher(normalized).matches()) {
-            throw new DomainException(UserErrorCode.INVALID_EMAIL_FORMAT);
+            throw new UserException(UserErrorCode.INVALID_EMAIL_FORMAT);
         }
         value = normalized;
     }

@@ -1,6 +1,6 @@
 package com.trusta_market.userservice.user.domain.vo;
 
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 
 public record Nickname(String value) {
@@ -10,11 +10,11 @@ public record Nickname(String value) {
 
     public Nickname {
         if (value == null || value.trim().isBlank()) {
-            throw new DomainException(UserErrorCode.INVALID_NICKNAME_FORMAT);
+            throw new UserException(UserErrorCode.INVALID_NICKNAME_FORMAT);
         }
         String normalized = value.trim();
         if (normalized.length() < MIN_LENGTH || normalized.length() > MAX_LENGTH) {
-            throw new DomainException(UserErrorCode.INVALID_NICKNAME_FORMAT);
+            throw new UserException(UserErrorCode.INVALID_NICKNAME_FORMAT);
         }
         value = normalized;
     }

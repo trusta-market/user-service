@@ -8,7 +8,7 @@ import com.trusta_market.userservice.user.domain.vo.Realname;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.user.domain.exception.DomainException;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.UserIdConverter;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.converter.EmailConverter;
@@ -121,7 +121,7 @@ public class User extends BaseUserEntity {
 
     public void withdraw(UUID userId) {
         if (isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
         super.delete(userId);
     }
@@ -129,7 +129,7 @@ public class User extends BaseUserEntity {
     public void approve() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
         }
         this.userStatus = UserStatus.APPROVED;
     }
@@ -137,7 +137,7 @@ public class User extends BaseUserEntity {
     public void reject() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.PENDING) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN); // TODO: 적절한 에러 코드로 변경 필요
         }
         this.userStatus = UserStatus.REJECTED;
     }
@@ -145,7 +145,7 @@ public class User extends BaseUserEntity {
     public void suspend() {
         checkNotWithdrawn();
         if (this.userStatus == UserStatus.SUSPENDED) {
-            throw new DomainException(UserErrorCode.SUSPENDED_USER);
+            throw new UserException(UserErrorCode.SUSPENDED_USER);
         }
         this.userStatus = UserStatus.SUSPENDED;
     }
@@ -153,14 +153,14 @@ public class User extends BaseUserEntity {
     public void unsuspend() {
         checkNotWithdrawn();
         if (this.userStatus != UserStatus.SUSPENDED) {
-            throw new DomainException(UserErrorCode.USER_NOT_FOUND);
+            throw new UserException(UserErrorCode.USER_NOT_FOUND);
         }
         this.userStatus = UserStatus.APPROVED;
     }
 
     private void checkNotWithdrawn() {
         if (isDeleted()) {
-            throw new DomainException(UserErrorCode.ALREADY_WITHDRAWN);
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 
 import com.trusta_market.userservice.user.domain.entity.UserStatusHistory;
-import com.trusta_market.userservice.user.domain.repository.UserStatusHistoryRepository;
+import com.trusta_market.userservice.user.application.port.out.UserStatusHistoryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,7 +21,6 @@ public class UserStatusHistoryRepositoryImpl implements UserStatusHistoryReposit
         return userStatusHistoryJpaRepository.save(history);
     }
 
-    @Override
     public List<UserStatusHistory> findAllByUserId(UUID userId) {
         return userStatusHistoryJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId);
     }

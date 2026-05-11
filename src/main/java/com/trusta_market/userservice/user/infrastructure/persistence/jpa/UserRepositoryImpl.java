@@ -3,15 +3,13 @@ package com.trusta_market.userservice.user.infrastructure.persistence.jpa;
 import com.trusta_market.userservice.user.domain.entity.User;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
-import com.trusta_market.userservice.user.domain.repository.UserRepository;
-import com.trusta_market.userservice.user.domain.pagination.DomainPage;
-import com.trusta_market.userservice.user.domain.pagination.DomainPageRequest;
+import com.trusta_market.userservice.user.application.port.out.UserRepository;
+import com.trusta_market.userservice.common.pagination.DomainPage;
+import com.trusta_market.userservice.common.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.domain.vo.Email;
-import com.trusta_market.userservice.user.domain.vo.Nickname;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,8 +18,6 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static com.trusta_market.userservice.user.domain.entity.QUser.user;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
@@ -41,7 +37,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findById(UserId userId) {
-        return userJpaRepository.findById(userId);
+        return userJpaRepository.findByUserIdAndDeletedAtIsNull(userId.value());
     }
 
     @Override
@@ -55,8 +51,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByNickname(Nickname nickname) {
-        return userJpaRepository.findByNicknameAndDeletedAtIsNull(nickname);
+    public Optional<User> findByName(Name name) {
+        return userJpaRepository.findByNameAndDeletedAtIsNull(name);
     }
 
     @Override
@@ -65,8 +61,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean existsByNickname(Nickname nickname) {
-        return userJpaRepository.existsByNicknameAndDeletedAtIsNull(nickname);
+    public boolean existsByName(Name name) {
+        return userJpaRepository.existsByNameAndDeletedAtIsNull(name);
     }
 
     @Override
