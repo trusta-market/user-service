@@ -25,17 +25,17 @@ public class SecurityUtil {
         if (authentication == null) return Optional.empty();
 
         Object principal = authentication.getPrincipal();
-        
+
         // 1. JWT 토큰 방식 (OAuth2 Resource Server)
         if (principal instanceof Jwt jwt) {
             return Optional.of(UUID.fromString(jwt.getSubject()));
         }
-        
+
         // 2. UserDetailsImpl 방식 (기존 필터 방식)
         if (principal instanceof UserDetailsImpl userDetails) {
             return Optional.of(userDetails.getUuid());
         }
-        
+
         return Optional.empty();
     }
 
