@@ -6,10 +6,12 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
 @SpringBootApplication
+@EnableScheduling
 @ComponentScan(basePackages = { "com.trusta_market.userservice",
         "com.trustamarket.common" })
 @EnableJpaRepositories(basePackages = "com.trusta_market.userservice")

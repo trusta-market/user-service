@@ -9,6 +9,9 @@ spring:
   cloud:
     config:
       enabled: false
+    openfeign:
+      circuitbreaker:
+        enabled: true
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/trusta_market}
     username: ${DB_USERNAME:trusta_admin}
@@ -28,6 +31,19 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${JWT_ISSUER_URI:http://localhost:9090/realms/trusta}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      wallet-service:
+        baseConfig: default
+    configs:
+      default:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        registerHealthIndicator: true
 
 trusta:
   gateway:

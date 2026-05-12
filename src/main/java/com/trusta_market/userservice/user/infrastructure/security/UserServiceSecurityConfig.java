@@ -53,7 +53,8 @@ public class UserServiceSecurityConfig {
                         .requestMatchers("/internal/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(org.springframework.security.config.Customizer.withDefaults()));
 
         if (loginFilter != null) {
             http.addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class);

@@ -10,6 +10,7 @@ public interface WalletPort {
      * 신규 사용자를 위한 지갑 생성 요청
      *
      * @param userId 생성할 지갑의 소유자 ID
+     * @return 성공 여부
      */
-    void createWallet(UserId userId);
+    boolean createWallet(UserId userId);
 }
