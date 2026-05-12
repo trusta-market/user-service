@@ -6,6 +6,10 @@ import com.trusta_market.userservice.user.domain.vo.UserStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.Name;
@@ -20,6 +24,10 @@ import java.util.UUID;
 public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByUserIdAndDeletedAtIsNull(UUID userId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select u from User u where u.userId = :userId and u.deletedAt is null")
+    Optional<User> findByIdWithLock(@Param("userId") UUID userId);
 
     Optional<User> findByKeycloakIdAndDeletedAtIsNull(KeycloakId keycloakId);
 

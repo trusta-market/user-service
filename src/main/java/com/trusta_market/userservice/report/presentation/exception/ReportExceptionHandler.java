@@ -13,11 +13,14 @@ public class ReportExceptionHandler {
     @ExceptionHandler(ReportException.class)
     public ResponseEntity<ErrorResponse> handleReportException(ReportException e) {
         ReportErrorCodeAdapter adapter = new ReportErrorCodeAdapter(e.getErrorCode());
-        
-        // ErrorResponse.of()는 공통 모듈의 표준 팩토리 메서드라고 가정합니다.
-        // 만약 실제 메서드명이 다르다면 공통 모듈 규격에 맞춰 수정이 필요할 수 있습니다.
+
         return ResponseEntity
                 .status(adapter.getStatus())
-                .body(ErrorResponse.of(adapter));
+                .body(ErrorResponse.of(
+                        adapter.getStatus(),
+                        adapter.getCode(),
+                        adapter.getMessage(),
+                        adapter.getField()
+                ));
     }
 }

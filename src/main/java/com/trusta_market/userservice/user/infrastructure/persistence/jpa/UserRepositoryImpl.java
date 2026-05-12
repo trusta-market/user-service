@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+// UserRepository 인터페이스의 JPA/Querydsl 기반 구현체 (Adapter)
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
@@ -30,41 +31,55 @@ public class UserRepositoryImpl implements UserRepository {
         this.queryFactory = queryFactory;
     }
 
+    // 유저 엔티티 정보 저장 또는 업데이트
     @Override
     public User save(User user) {
         return userJpaRepository.save(user);
     }
 
+    // 내부 식별자(UserId)를 통해 삭제되지 않은 유저 조회
     @Override
     public Optional<User> findById(UserId userId) {
         return userJpaRepository.findByUserIdAndDeletedAtIsNull(userId.value());
     }
 
+    // 내부 식별자(UserId)를 통해 비관적 락(PESSIMISTIC_WRITE)을 걸어 유저 조회
+    @Override
+    public Optional<User> findByIdWithLock(UserId userId) {
+        return userJpaRepository.findByIdWithLock(userId.value());
+    }
+
+    // Keycloak 식별자를 통해 유저 정보 조회
     @Override
     public Optional<User> findByKeycloakId(KeycloakId keycloakId) {
         return userJpaRepository.findByKeycloakIdAndDeletedAtIsNull(keycloakId);
     }
 
+    // 이메일 VO를 통해 유저 정보 조회
     @Override
     public Optional<User> findByEmail(Email email) {
         return userJpaRepository.findByEmailAndDeletedAtIsNull(email);
     }
 
+    // 이름(닉네임) VO를 통해 유저 정보 조회
     @Override
     public Optional<User> findByName(Name name) {
         return userJpaRepository.findByNameAndDeletedAtIsNull(name);
     }
 
+    // 동일한 이메일을 가진 유저 존재 여부 확인
     @Override
     public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmailAndDeletedAtIsNull(email);
     }
 
+    // 동일한 이름(닉네임)을 가진 유저 존재 여부 확인
     @Override
     public boolean existsByName(Name name) {
         return userJpaRepository.existsByNameAndDeletedAtIsNull(name);
     }
 
+    // 활성화된 전체 유저 목록 페이징 조회
     @Override
     public DomainPage<User> findAllActiveUsers(DomainPageRequest pageRequest) {
         Page<User> page = userJpaRepository.findAllByDeletedAtIsNull(PageRequest.of(pageRequest.page(), pageRequest.size()));
@@ -89,6 +104,7 @@ public class UserRepositoryImpl implements UserRepository {
         return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
+    // 여러 개의 내부 식별자(UserId) 리스트를 통해 유저 목록 일괄 조회
     @Override
     public List<User> findAllActiveUsersByIds(Collection<UserId> userIds) {
         return userJpaRepository.findAllByUserIdInAndDeletedAtIsNull(userIds);
