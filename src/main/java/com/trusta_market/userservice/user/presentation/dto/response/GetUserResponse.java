@@ -15,12 +15,12 @@ public record GetUserResponse(
     // Result 객체로부터 Response 생성
     public static GetUserResponse from(UserResult result) {
         return new GetUserResponse(
-            result.userId(),
-            result.email(),
-            result.name(),
-            result.role(),
-            result.userStatus(),
-            result.membership()
+            result.userId().value(),
+            result.email().value(),
+            result.name().value(),
+            result.role().name(),
+            result.userStatus().name(),
+            result.membership().name()
         );
     }
 }

@@ -3,6 +3,7 @@ package com.trusta_market.userservice.user.application.port.in;
 import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.user.application.dto.command.CreateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.CreateUserCommand;
+import com.trusta_market.userservice.user.application.dto.command.RejectUserCommand;
 import com.trusta_market.userservice.user.application.dto.command.SignUpCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
@@ -44,7 +45,7 @@ public interface UserUseCase {
     UserResult approveUser(UUID userId);
 
     // 관리자 승인 대기 상태 사용자 거절
-    UserResult rejectUser(UUID userId, String reason);
+    UserResult rejectUser(UUID userId, RejectUserCommand command);
 
     // 사용자의 배송지 목록을 조회한다.
     List<AddressResult> getAddressList(UUID userId);

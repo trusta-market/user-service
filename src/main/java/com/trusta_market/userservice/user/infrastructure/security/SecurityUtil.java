@@ -23,7 +23,11 @@ public class SecurityUtil {
         
         // 1. JWT 토큰 방식 (OAuth2 Resource Server)
         if (principal instanceof Jwt jwt) {
-            return Optional.of(UUID.fromString(jwt.getSubject()));
+            try {
+                return Optional.of(UUID.fromString(jwt.getSubject()));
+            } catch (IllegalArgumentException e) {
+                return Optional.empty();
+            }
         }
         
         // 2. UserDetailsImpl 방식 (기존 필터 방식)

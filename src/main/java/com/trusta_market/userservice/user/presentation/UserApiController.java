@@ -35,7 +35,9 @@ public class UserApiController {
     @PostMapping("/signup")
     public ResponseEntity<GetUserResponse> signup(@Valid @RequestBody SignUpRequest request) {
         var result = userUseCase.signUp(new SignUpCommand(
-                Email.of(request.email()), request.password(), Name.of(request.name())));
+                Email.of(request.email()), 
+                com.trusta_market.userservice.user.domain.vo.Password.of(request.password()), 
+                Name.of(request.name())));
         return ResponseEntity.status(201).body(GetUserResponse.from(result));
     }
 

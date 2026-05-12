@@ -77,14 +77,14 @@ public class KeycloakAdapter implements IdentityProviderPort {
 
         try (Response response = keycloak.realm(realm).users().create(user)) {
             log.info("Keycloak response status: {}", response.getStatus());
-            
+
             if (response.getStatus() == 409) {
                 throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
             }
-            
+
             if (response.getStatus() != 201) {
                 String errorEntity = response.hasEntity() ? response.readEntity(String.class) : "no entity";
-                log.error("Keycloak creation failed. Check server logs for details.");
+                log.error("Keycloak creation failed. status={}, entity={}", response.getStatus(), errorEntity);
                 throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
@@ -96,9 +96,11 @@ public class KeycloakAdapter implements IdentityProviderPort {
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
             log.info("Successfully created Keycloak user account.");
             return KeycloakId.of(userId);
-        } catch (Exception e) {
-            log.error("Exception occurred during Keycloak integration!");
+        } catch (UserException e) {
             throw e;
+        } catch (Exception e) {
+            log.error("Exception occurred during Keycloak integration!", e);
+            throw new UserException(UserErrorCode.KEYCLOAK_ERROR, e);
         } finally {
             keycloak.close();
         }

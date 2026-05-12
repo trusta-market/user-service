@@ -1,6 +1,7 @@
 package com.trusta_market.userservice.user.presentation;
 
 import com.trusta_market.userservice.common.pagination.DomainPage;
+import com.trusta_market.userservice.user.application.dto.command.RejectUserCommand;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
@@ -52,7 +53,7 @@ public class AdminUserApiController {
     // 유저 가입 거절 API
     @PostMapping("/{userId}/reject")
     public ResponseEntity<GetUserResponse> rejectUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
-        var result = userUseCase.rejectUser(userId, request.reason());
+        var result = userUseCase.rejectUser(userId, new RejectUserCommand(request.reason()));
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 

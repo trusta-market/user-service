@@ -1,7 +1,8 @@
 package com.trusta_market.userservice.user.infrastructure.security;
 
 import com.trustamarket.common.config.security.LoginFilter;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,15 +18,17 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 // 유저 서비스 보안 설정 (인증/인가 및 보안 필터 체인 정의)
-// 유저 서비스 보안 설정
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class UserServiceSecurityConfig {
 
     private final LoginFilter loginFilter;
 
+    @Autowired(required = false)
+    public UserServiceSecurityConfig(LoginFilter loginFilter) {
+        this.loginFilter = loginFilter;
+    }
 
     // 회원가입 API 등 보안 필터링이 불필요한 공용 경로 설정
     @Bean
@@ -34,8 +37,9 @@ public class UserServiceSecurityConfig {
                 .requestMatchers("/api/v1/users/signup");
     }
 
-    // LoginFilter의 자동 등록 방지
+    // LoginFilter의 자동 등록 방지 (LoginFilter 빈이 존재할 때만 생성)
     @Bean
+    @ConditionalOnBean(LoginFilter.class)
     public FilterRegistrationBean<LoginFilter> loginFilterRegistration(LoginFilter filter) {
         FilterRegistrationBean<LoginFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false); // Servlet 글로벌 필터 등록 방지

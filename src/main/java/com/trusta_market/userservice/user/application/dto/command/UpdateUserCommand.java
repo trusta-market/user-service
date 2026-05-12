@@ -6,4 +6,10 @@ import com.trusta_market.userservice.user.domain.vo.Name;
 public record UpdateUserCommand(
     Name name
 ) {
+    public UpdateUserCommand {
+        if (name == null) {
+            throw new com.trusta_market.userservice.user.domain.exception.UserException(
+                com.trusta_market.userservice.user.domain.exception.UserErrorCode.INVALID_NAME_FORMAT);
+        }
+    }
 }

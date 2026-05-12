@@ -15,7 +15,9 @@ java {
 
 repositories {
     mavenCentral()
-    mavenLocal()
+    if (findProperty('useLocalMaven') == 'true') {
+        mavenLocal()
+    }
     maven {
         url = uri("https://maven.pkg.github.com/trusta-market/common")
         credentials {
@@ -42,7 +44,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
-    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     implementation 'com.trustamarket:common:0.0.1-SNAPSHOT'
     implementation 'org.keycloak:keycloak-admin-client:26.0.9'

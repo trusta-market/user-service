@@ -3,6 +3,12 @@ package com.trusta_market.userservice.user.presentation;
 import com.trusta_market.userservice.user.application.dto.command.CreateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateAddressCommand;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
+import com.trusta_market.userservice.user.domain.vo.AddressDetail;
+import com.trusta_market.userservice.user.domain.vo.AddressInfo;
+import com.trusta_market.userservice.user.domain.vo.Name;
+import com.trusta_market.userservice.user.domain.vo.PhoneNumber;
+import com.trusta_market.userservice.user.domain.vo.UserId;
+import com.trusta_market.userservice.user.domain.vo.ZipCode;
 import com.trusta_market.userservice.user.presentation.dto.request.PatchAddressRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostAddressRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetAddressResponse;
@@ -36,8 +42,12 @@ public class AddressApiController {
     @PostMapping("/{userId}")
     public ResponseEntity<GetAddressResponse> createAddress(@PathVariable UUID userId, @Valid @RequestBody PostAddressRequest request) {
         var result = userUseCase.createAddress(new CreateAddressCommand(
-                userId, request.recipientName(), request.recipientPhone(),
-                request.zipCode(), request.address(), request.addressDetail()));
+                UserId.of(userId),
+                Name.of(request.recipientName()),
+                PhoneNumber.of(request.recipientPhone()),
+                ZipCode.of(request.zipCode()),
+                AddressInfo.of(request.address()),
+                AddressDetail.of(request.addressDetail())));
         return ResponseEntity.status(201).body(GetAddressResponse.from(result));
     }
 
@@ -45,8 +55,11 @@ public class AddressApiController {
     @PatchMapping("/{userId}/{addressId}")
     public ResponseEntity<GetAddressResponse> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @Valid @RequestBody PatchAddressRequest request) {
         var result = userUseCase.updateAddress(userId, addressId, new UpdateAddressCommand(
-                request.recipientName(), request.recipientPhone(), request.zipCode(),
-                request.address(), request.addressDetail()));
+                request.recipientName() != null ? Name.of(request.recipientName()) : null,
+                request.recipientPhone() != null ? PhoneNumber.of(request.recipientPhone()) : null,
+                request.zipCode() != null ? ZipCode.of(request.zipCode()) : null,
+                request.address() != null ? AddressInfo.of(request.address()) : null,
+                request.addressDetail() != null ? AddressDetail.of(request.addressDetail()) : null));
         return ResponseEntity.ok(GetAddressResponse.from(result));
     }
 

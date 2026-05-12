@@ -16,9 +16,10 @@ public record UserCreatedEvent(
         Name name
 ) {
     public UserCreatedEvent {
-        Objects.requireNonNull(userId, "UserId must not be null");
-        Objects.requireNonNull(email, "Email must not be null");
-        Objects.requireNonNull(name, "Name must not be null");
+        if (userId == null || email == null || name == null) {
+            throw new com.trusta_market.userservice.user.domain.exception.UserException(
+                com.trusta_market.userservice.user.domain.exception.UserErrorCode.INVALID_INPUT);
+        }
     }
 
     public static UserCreatedEvent of(UserId userId, Email email, Name name) {

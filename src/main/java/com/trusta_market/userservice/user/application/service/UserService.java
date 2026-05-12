@@ -4,6 +4,7 @@ import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.common.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.application.dto.command.CreateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.CreateUserCommand;
+import com.trusta_market.userservice.user.application.dto.command.RejectUserCommand;
 import com.trusta_market.userservice.user.application.dto.command.SignUpCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateAddressCommand;
 import com.trusta_market.userservice.user.application.dto.command.UpdateUserCommand;
@@ -62,7 +63,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         Email email = command.email();
         Name name = command.name();
         
-        KeycloakId keycloakId = identityProviderPort.createIdentity(email, command.password(), name);
+        KeycloakId keycloakId = identityProviderPort.createIdentity(email, command.password().value(), name);
 
         User user = User.create(keycloakId, email, name);
         User savedUser = userRepository.save(user);
@@ -144,22 +145,22 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     // 신규 배송지 등록 (최대 10개 제한)
     @Override
     public AddressResult createAddress(CreateAddressCommand command) {
-        User user = findUserByIdWithLock(command.userId());
+        User user = findUserByIdWithLock(command.userId().value());
         assertUserCanMutate(user);
-        if (userAddressRepository.countActiveAddressesByUserId(UserId.of(command.userId())) >= 10) {
+        if (userAddressRepository.countActiveAddressesByUserId(command.userId()) >= 10) {
             throw new UserException(UserErrorCode.ADDRESS_LIMIT_EXCEEDED);
         }
 
         // 첫 번째 배송지인 경우 자동으로 대표 배송지 설정
-        boolean makeDefault = userAddressRepository.countActiveAddressesByUserId(UserId.of(command.userId())) == 0;
+        boolean makeDefault = userAddressRepository.countActiveAddressesByUserId(command.userId()) == 0;
         return AddressResult.from(userAddressRepository.save(
                 UserAddress.create(
-                        UserId.of(command.userId()),
-                        Name.of(command.recipientName()),
-                        PhoneNumber.of(command.recipientPhone()),
-                        ZipCode.of(command.zipCode()),
-                        AddressInfo.of(command.address()),
-                        AddressDetail.of(command.addressDetail()),
+                        command.userId(),
+                        command.recipientName(),
+                        command.recipientPhone(),
+                        command.zipCode(),
+                        command.address(),
+                        command.addressDetail(),
                         makeDefault)));
     }
 
@@ -170,11 +171,11 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         assertUserCanMutate(user);
         UserAddress address = findOwnedAddress(userId, addressId);
         address.update(
-                command.recipientName() != null ? Name.of(command.recipientName()) : null,
-                command.recipientPhone() != null ? PhoneNumber.of(command.recipientPhone()) : null,
-                command.zipCode() != null ? ZipCode.of(command.zipCode()) : null,
-                command.address() != null ? AddressInfo.of(command.address()) : null,
-                command.addressDetail() != null ? AddressDetail.of(command.addressDetail()) : null
+                command.recipientName(),
+                command.recipientPhone(),
+                command.zipCode(),
+                command.address(),
+                command.addressDetail()
         );
         return AddressResult.from(userAddressRepository.save(address));
     }
@@ -238,7 +239,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
 
     // 관리자: 유저 가입 거절
     @Override
-    public UserResult rejectUser(UUID userId, String reason) {
+    public UserResult rejectUser(UUID userId, RejectUserCommand command) {
         User user = findUserById(userId);
         user.reject();
         return UserResult.from(userRepository.save(user));

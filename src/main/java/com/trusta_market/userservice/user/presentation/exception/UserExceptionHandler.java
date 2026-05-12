@@ -15,7 +15,7 @@ public class UserExceptionHandler {
     // 도메인 예외(UserException) 발생 시 에러 코드 규격에 맞춰 상세 내용 반환
     @ExceptionHandler(UserException.class)
     public ResponseEntity<ErrorResponse> handleUserException(UserException e) {
-        log.error("User Domain Exception: {}", e.getMessage());
+        log.error("User Domain Exception", e);
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.of(
