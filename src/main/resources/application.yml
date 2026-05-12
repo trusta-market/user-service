@@ -15,6 +15,7 @@ spring:
     password: ${DB_PASSWORD:trusta_admin_pw}
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:true}
