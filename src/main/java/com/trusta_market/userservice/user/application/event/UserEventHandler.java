@@ -2,6 +2,8 @@ package com.trusta_market.userservice.user.application.event;
 
 import com.trusta_market.userservice.user.application.port.out.WalletPort;
 import com.trusta_market.userservice.user.domain.event.UserCreatedEvent;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.entity.WalletCreationTask;
+import com.trusta_market.userservice.user.infrastructure.persistence.jpa.entity.WalletCreationTaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,21 +20,39 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class UserEventHandler {
 
     private final WalletPort walletPort;
+    private final WalletCreationTaskRepository walletCreationTaskRepository;
 
     /**
-     * 유저 생성 이벤트를 구독하여 지갑 생성을 요청합니다.
-     * TransactionPhase.AFTER_COMMIT을 사용하여 유저 정보가 DB에 최종 반영된 후 호출합니다.
-     *
-     * @param event 유저 생성 이벤트
+     * 유저 생성 이벤트를 구독하여 지갑 생성을 처리합니다. (Outbox 패턴 적용)
+     * 1. DB에 PENDING 상태로 작업 기록 저장
+     * 2. 비동기로 지갑 서비스 호출 시도
+     * 3. 성공 시 COMPLETED 상태로 업데이트
      */
+    @org.springframework.scheduling.annotation.Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserCreatedEvent(UserCreatedEvent event) {
-        log.info("Handling UserCreatedEvent for user: {}", event.userId().value());
+        log.info("Starting wallet creation process for user: {}", event.userId().value());
+        
+        java.util.UUID userId = event.userId().value();
+        
+        // 1. 먼저 DB에 PENDING 상태로 저장 (나중에 스케줄러가 챙길 수 있도록)
+        WalletCreationTask task = walletCreationTaskRepository.findByUserId(userId)
+                .orElseGet(() -> walletCreationTaskRepository.save(new WalletCreationTask(userId)));
+
         try {
-            walletPort.createWallet(event.userId());
+            // 2. 지갑 서비스 호출 시도
+            boolean success = walletPort.createWallet(event.userId());
+            
+            // 3. 성공 시 완료 처리
+            if (success) {
+                task.complete();
+                walletCreationTaskRepository.save(task);
+                log.info("Wallet created successfully for user: {}", userId);
+            } else {
+                log.warn("Wallet creation failed or fallback triggered for user: {}. Task remains PENDING.", userId);
+            }
         } catch (Exception e) {
-            log.error("Failed to process UserCreatedEvent for wallet creation. userId: {}", event.userId().value(), e);
-            // 필요 시 재시도 로직이나 보상 트랜잭션 등을 고려할 수 있습니다.
+            log.error("Error occurred while creating wallet for user: {}. Task remains PENDING.", userId, e);
         }
     }
 }
