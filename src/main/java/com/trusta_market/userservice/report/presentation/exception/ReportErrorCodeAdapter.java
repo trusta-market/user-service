@@ -13,7 +13,7 @@ public class ReportErrorCodeAdapter implements ErrorCodeSpec {
 
     @Override
     public HttpStatus getStatus() {
-        return HttpStatus.valueOf(errorCode.getStatus());
+        return errorCode.getStatus();
     }
 
     @Override
