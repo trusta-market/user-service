@@ -1,7 +1,11 @@
-package com.trusta_market.userservice.user.application.port;
+package com.trusta_market.userservice.user.application.port.out;
 
 import java.util.Optional;
 
+/**
+ * 유저 관련 캐시 작업을 처리하는 아웃바운드 포트 인터페이스.
+ * Redis 등의 캐시 저장소 연동을 추상화합니다.
+ */
 public interface UserCachePort {
 
     // 캐시 데이터 조회

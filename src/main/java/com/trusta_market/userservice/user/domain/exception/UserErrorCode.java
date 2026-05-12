@@ -5,10 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-/**
- * 유저 도메인(유저, 계좌, 주소, 내부 서비스) 통합 에러 코드 정의
- * 프로젝트 표준 가이드라인에 따라 ErrorCodeSpec 인터페이스를 구현합니다.
- */
+// 유저 도메인(유저, 계좌, 주소, 내부 서비스) 통합 에러 코드 정의 (ErrorCodeSpec 구현)
 @Getter
 @RequiredArgsConstructor
 public enum UserErrorCode implements ErrorCodeSpec {
@@ -21,6 +18,7 @@ public enum UserErrorCode implements ErrorCodeSpec {
     REJECTED_USER(HttpStatus.FORBIDDEN, "U007", "가입 신청이 거절된 회원입니다."),
     SUSPENDED_USER(HttpStatus.FORBIDDEN, "U008", "정지된 회원입니다."),
     USER_NOT_ACTIVE(HttpStatus.FORBIDDEN, "U001", "활성화된 사용자가 아닙니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "U401", "인증 정보가 없습니다."),
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST, "U013", "변경 불가능한 유저 상태입니다."),
 
     // Validation

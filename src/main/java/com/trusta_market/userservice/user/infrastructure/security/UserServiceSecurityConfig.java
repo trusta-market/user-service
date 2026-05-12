@@ -16,31 +16,33 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
+// 유저 서비스 보안 설정 (인증/인가 및 보안 필터 체인 정의)
+// 유저 서비스 보안 설정
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class UserServiceSecurityConfig {
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
-    private LoginFilter loginFilter;
+    private final LoginFilter loginFilter;
 
-    public UserServiceSecurityConfig() {
-        System.out.println(">>> UserServiceSecurityConfig 로드됨!");
-    }
 
+    // 회원가입 API 등 보안 필터링이 불필요한 공용 경로 설정
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers("/api/v1/users/signup");
     }
 
+    // LoginFilter의 자동 등록 방지
     @Bean
     public FilterRegistrationBean<LoginFilter> loginFilterRegistration(LoginFilter filter) {
         FilterRegistrationBean<LoginFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setEnabled(false); // Servlet 글로벌 필터 등록 방지! (Spring Security 필터 체인 안에서만 돌게 함)
+        registration.setEnabled(false); // Servlet 글로벌 필터 등록 방지
         return registration;
     }
 
+    // HTTP 보안 설정(CSRF, 세션, 경로별 권한 등)을 정의하는 메인 필터 체인
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

@@ -7,6 +7,8 @@ import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Name;
+import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
+import com.trusta_market.userservice.user.domain.exception.UserException;
 import com.trusta_market.userservice.user.infrastructure.security.SecurityUtil;
 import com.trusta_market.userservice.user.presentation.dto.request.PatchUserRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserRequest;
@@ -41,9 +43,9 @@ public class UserApiController {
     @PostMapping
     public ResponseEntity<GetUserResponse> createUser(@RequestBody PostUserRequest request) {
         String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
-                .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.UNAUTHORIZED));
         String email = SecurityUtil.getCurrentUserEmail()
-                .orElseThrow(() -> new RuntimeException("이메일 정보가 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.UNAUTHORIZED));
         
         var result = userUseCase.createUser(new CreateUserCommand(
                 KeycloakId.of(keycloakId), Email.of(email), Name.of(request.name())));
@@ -54,7 +56,7 @@ public class UserApiController {
     @GetMapping("/me")
     public ResponseEntity<GetUserResponse> getMyUser() {
         String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
-                .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.UNAUTHORIZED));
         var result = userUseCase.getUserByKeycloakId(KeycloakId.of(keycloakId));
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
@@ -63,7 +65,7 @@ public class UserApiController {
     @PatchMapping("/me")
     public ResponseEntity<GetUserResponse> updateMyUser(@RequestBody PatchUserRequest request) {
         String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
-                .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.UNAUTHORIZED));
         var result = userUseCase.updateUser(KeycloakId.of(keycloakId),
                 new UpdateUserCommand(Name.of(request.name())));
         return ResponseEntity.ok(GetUserResponse.from(result));
@@ -73,7 +75,7 @@ public class UserApiController {
     @DeleteMapping("/me")
     public ResponseEntity<Void> withdrawMyUser() {
         String keycloakId = SecurityUtil.getCurrentUserId().map(UUID::toString)
-                .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
+                .orElseThrow(() -> new UserException(UserErrorCode.UNAUTHORIZED));
         userUseCase.withdrawUser(KeycloakId.of(keycloakId));
         return ResponseEntity.noContent().build();
     }

@@ -17,6 +17,7 @@ import java.util.Optional;
 public interface UserRepository {
     User save(User user);
     Optional<User> findById(UserId userId);
+    Optional<User> findByIdWithLock(UserId userId);
     Optional<User> findByKeycloakId(KeycloakId keycloakId);
     Optional<User> findByEmail(Email email);
     Optional<User> findByName(Name name);

@@ -43,7 +43,7 @@ public class AddressApiController {
 
     // 기존 배송지 수정 API
     @PatchMapping("/{userId}/{addressId}")
-    public ResponseEntity<GetAddressResponse> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @RequestBody PatchAddressRequest request) {
+    public ResponseEntity<GetAddressResponse> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @Valid @RequestBody PatchAddressRequest request) {
         var result = userUseCase.updateAddress(userId, addressId, new UpdateAddressCommand(
                 request.recipientName(), request.recipientPhone(), request.zipCode(),
                 request.address(), request.addressDetail()));

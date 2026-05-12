@@ -7,11 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.scheduling.annotation.Async;
 
-/**
- * 유저 도메인 이벤트 핸들러
- * 유저 생성 후 지갑 생성 등 비동기/분리된 처리를 담당합니다.
- */
+// 유저 도메인 이벤트 핸들러 (유저 생성 후 지갑 생성 등 비동기/분리된 처리 담당)
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -19,12 +17,8 @@ public class UserEventHandler {
 
     private final WalletPort walletPort;
 
-    /**
-     * 유저 생성 이벤트를 구독하여 지갑 생성을 요청합니다.
-     * TransactionPhase.AFTER_COMMIT을 사용하여 유저 정보가 DB에 최종 반영된 후 호출합니다.
-     *
-     * @param event 유저 생성 이벤트
-     */
+    // 외부 지갑 서비스에 유저의 고유 ID를 전달하여 지갑 생성 요청 (트랜잭션 커밋 후 실행)
+    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserCreatedEvent(UserCreatedEvent event) {
         log.info("Handling UserCreatedEvent for user: {}", event.userId().value());

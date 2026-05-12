@@ -7,6 +7,7 @@ import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.domain.exception.UserException;
 import jakarta.ws.rs.core.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.UsersResource;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 import java.util.Collections;
 import java.util.List;
 
+// IdentityProviderPort 인터페이스의 Keycloak 기반 구현체 (Adapter)
+@Slf4j
 @Component
 public class KeycloakAdapter implements IdentityProviderPort {
 
@@ -40,6 +43,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
         this.password = password;
     }
 
+    // Keycloak 관리자 API 호출을 위한 인증 객체 생성
     private Keycloak getKeycloakInstance() {
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
@@ -50,9 +54,10 @@ public class KeycloakAdapter implements IdentityProviderPort {
                 .build();
     }
 
+    // Keycloak 서버에 새로운 사용자 계정을 생성하고 고유 식별자(KeycloakId) 반환
     @Override
     public KeycloakId createIdentity(Email email, String password, Name name) {
-        System.out.println(">>> Keycloak 사용자 생성 시도: " + email.value());
+        log.info("Attempting to create Keycloak user: {}", email.value());
         Keycloak keycloak = getKeycloakInstance();
         
         UserRepresentation user = new UserRepresentation();
@@ -71,7 +76,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
         user.setCredentials(Collections.singletonList(credential));
 
         try (Response response = keycloak.realm(realm).users().create(user)) {
-            System.out.println(">>> Keycloak 응답 상태: " + response.getStatus());
+            log.info("Keycloak response status: {}", response.getStatus());
             
             if (response.getStatus() == 409) {
                 throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
@@ -79,7 +84,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
             
             if (response.getStatus() != 201) {
                 String errorEntity = response.hasEntity() ? response.readEntity(String.class) : "no entity";
-                System.out.println(">>> Keycloak 생성 실패 상세: " + errorEntity);
+                log.error("Keycloak creation failed detail: {}", errorEntity);
                 throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
@@ -89,17 +94,17 @@ public class KeycloakAdapter implements IdentityProviderPort {
 
             // 생성된 유저의 ID 추출 (Location 헤더에서 가져옴)
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-            System.out.println(">>> Keycloak 사용자 생성 성공 ID: " + userId);
+            log.info("Successfully created Keycloak user ID: {}", userId);
             return KeycloakId.of(userId);
         } catch (Exception e) {
-            System.err.println(">>> Keycloak 연동 중 예외 발생!");
-            e.printStackTrace();
+            log.error("Exception occurred during Keycloak integration!");
             throw e;
         } finally {
             keycloak.close();
         }
     }
 
+    // Keycloak 서버에서 특정 사용자 계정 삭제
     @Override
     public void deleteIdentity(KeycloakId keycloakId) {
         Keycloak keycloak = getKeycloakInstance();

@@ -3,12 +3,12 @@ package com.trusta_market.userservice.user.application.port.in;
 import java.util.UUID;
 
 public interface UserValidationUseCase {
-    // 사용자가 활성 상태인지 검증한다.
+    // 유저 활성 상태(APPROVED) 여부 검증
     void validateActiveUser(UUID userId);
 
-    // 사용자가 수정 가능한 상태인지 검증한다.
+    // 유저 데이터 변경 가능 상태 여부 검증
     void validateUserCanMutate(UUID userId);
 
-    // Keycloak 식별자를 내부 사용자 식별자로 변환한다.
+    // Keycloak ID를 내부 식별자(UUID)로 변환
     UUID resolveInternalId(UUID keycloakId);
 }

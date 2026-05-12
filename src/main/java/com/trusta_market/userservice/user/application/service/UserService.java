@@ -109,7 +109,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     @Override
     public UserResult updateUser(KeycloakId keycloakId, UpdateUserCommand command) {
         User user = findUserByKeycloakId(keycloakId);
-        assertUserCanMutate(user); // 변경 가능 상태인지 검증
+        assertUserCanMutate(user); // 변경 가능 상태 여부 검증
         if (command.name() != null && !command.name().equals(user.getName())
                 && userRepository.existsByName(command.name())) {
             throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
@@ -129,7 +129,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         userRepository.save(user);
     }
 
-    // 유저의 활성 배송지 목록 조회 (생성일 순 정렬)
+    // 유저 활성 배송지 목록 조회 (생성일 순 정렬)
     @Override
     @Transactional(readOnly = true)
     public List<AddressResult> getAddressList(UUID userId) {
@@ -144,7 +144,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     // 신규 배송지 등록 (최대 10개 제한)
     @Override
     public AddressResult createAddress(CreateAddressCommand command) {
-        User user = findUserById(command.userId());
+        User user = findUserByIdWithLock(command.userId());
         assertUserCanMutate(user);
         if (userAddressRepository.countActiveAddressesByUserId(UserId.of(command.userId())) >= 10) {
             throw new UserException(UserErrorCode.ADDRESS_LIMIT_EXCEEDED);
@@ -290,6 +290,16 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         return user;
     }
 
+    // UserId 기반 유저 검색 헬퍼 (비관적 락 적용)
+    private User findUserByIdWithLock(UUID userId) {
+        User user = userRepository.findByIdWithLock(UserId.of(userId))
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        if (user.isDeleted()) {
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);
+        }
+        return user;
+    }
+
     // 유저 정보 변경 가능 여부(상태) 검사 헬퍼
     private void assertUserCanMutate(User user) {
         if (user.getUserStatus() == UserStatus.PENDING) {
@@ -311,14 +321,14 @@ public class UserService implements UserUseCase, UserValidationUseCase {
 
     // === UserValidationUseCase 구현 ===
 
-    // 유저가 활성 상태(APPROVED)인지 검증
+    // 유저 활성 상태(APPROVED) 여부 검증
     @Override
     @Transactional(readOnly = true)
     public void validateActiveUser(UUID userId) {
         validateInternalUser(userId);
     }
 
-    // 유저가 데이터 변경이 가능한 상태인지 검증
+    // 유저 데이터 변경 가능 상태 여부 검증
     @Override
     @Transactional(readOnly = true)
     public void validateUserCanMutate(UUID userId) {
