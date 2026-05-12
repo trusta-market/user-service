@@ -54,4 +54,10 @@ public class UserReportRepositoryImpl implements UserReportRepository {
         }
         return DomainPage.of(page.getContent(), page.getNumber(), page.getSize(), page.getTotalElements());
     }
+
+    // 특정 신고자의 전체 신고 내역 조회
+    @Override
+    public java.util.List<UserReport> findAllByReporterUserId(UserId reporterUserId) {
+        return userReportJpaRepository.findAllByReporterUserId(reporterUserId);
+    }
 }

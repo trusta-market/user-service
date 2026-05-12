@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+// UserAddressRepository 인터페이스의 JPA 기반 구현체
 @Repository
 public class UserAddressRepositoryImpl implements UserAddressRepository {
 

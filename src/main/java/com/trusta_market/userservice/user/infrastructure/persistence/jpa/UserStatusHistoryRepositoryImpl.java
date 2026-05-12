@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.UUID;
 
+// UserStatusHistoryRepository 인터페이스의 JPA 기반 구현체
 @Repository
 public class UserStatusHistoryRepositoryImpl implements UserStatusHistoryRepository {
 

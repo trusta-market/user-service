@@ -10,11 +10,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Optional;
 import java.util.UUID;
 
+// JPA Auditing 설정 (생성자/수정자 자동 기록)
 @Configuration
 @EnableJpaAuditing
 public class JpaAuditConfig {
 
     @Bean
+    @org.springframework.context.annotation.Primary
     public AuditorAware<UUID> auditorProvider() {
         return () -> {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -19,4 +19,6 @@ public interface UserReportRepository {
     boolean existsByReporterUserIdAndReportedUserId(UserId reporterUserId, UserId reportedUserId);
     // 전체 신고 목록 페이징 조회 (상태 필터링 포함)
     DomainPage<UserReport> findAll(DomainPageRequest pageRequest, ReportStatus status);
+    // 특정 신고자의 전체 신고 내역 조회
+    java.util.List<UserReport> findAllByReporterUserId(UserId reporterUserId);
 }

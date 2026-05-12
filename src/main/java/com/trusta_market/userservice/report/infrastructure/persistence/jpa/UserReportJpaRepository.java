@@ -15,4 +15,6 @@ public interface UserReportJpaRepository extends JpaRepository<UserReport, UUID>
     boolean existsByReporterUserIdAndReportedUserId(UserId reporterUserId, UserId reportedUserId);
     // 상태별 페이징 조회
     Page<UserReport> findAllByStatus(ReportStatus status, Pageable pageable);
+    // 특정 신고자의 전체 신고 내역 조회
+    java.util.List<UserReport> findAllByReporterUserId(UserId reporterUserId);
 }

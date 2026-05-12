@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+// 유저 배송지 Spring Data JPA 인터페이스
 public interface UserAddressJpaRepository extends JpaRepository<UserAddress, UUID> {
     List<UserAddress> findAllByUserIdAndDeletedAtIsNull(UserId userId);
     long countByUserIdAndDeletedAtIsNull(UserId userId);

@@ -1,11 +1,20 @@
 # Gradle
 .gradle/
 build/
+!gradle/wrapper/gradle-wrapper.jar
 
 # IDE
 .idea/
 *.iml
+.vscode/
+.project
+.classpath
+.settings/
+bin/
 
-# Java
-*.class
+# Local configuration & Secrets
+gradle.properties
 
+# OS
+.DS_Store
+Thumbs.db
