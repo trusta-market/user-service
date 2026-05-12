@@ -57,7 +57,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
     // Keycloak 서버에 새로운 사용자 계정을 생성하고 고유 식별자(KeycloakId) 반환
     @Override
     public KeycloakId createIdentity(Email email, String password, Name name) {
-        log.info("Attempting to create Keycloak user: {}", email.value());
+        log.info("Attempting to create a new Keycloak user account...");
         Keycloak keycloak = getKeycloakInstance();
         
         UserRepresentation user = new UserRepresentation();
@@ -84,7 +84,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
             
             if (response.getStatus() != 201) {
                 String errorEntity = response.hasEntity() ? response.readEntity(String.class) : "no entity";
-                log.error("Keycloak creation failed detail: {}", errorEntity);
+                log.error("Keycloak creation failed. Check server logs for details.");
                 throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
@@ -94,7 +94,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
 
             // 생성된 유저의 ID 추출 (Location 헤더에서 가져옴)
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-            log.info("Successfully created Keycloak user ID: {}", userId);
+            log.info("Successfully created Keycloak user account.");
             return KeycloakId.of(userId);
         } catch (Exception e) {
             log.error("Exception occurred during Keycloak integration!");

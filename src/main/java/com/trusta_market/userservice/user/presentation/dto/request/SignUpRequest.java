@@ -14,8 +14,14 @@ public record SignUpRequest(
     @NotBlank String name
 ) {
     public SignUpRequest {
-        if (email == null || email.isBlank()) throw new UserException(UserErrorCode.INVALID_EMAIL_FORMAT);
-        if (password == null || password.isBlank() || password.length() < 8) throw new UserException(UserErrorCode.INVALID_INPUT);
-        if (name == null || name.isBlank()) throw new UserException(UserErrorCode.INVALID_NAME_FORMAT);
+        if (email == null || email.isBlank() || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new UserException(UserErrorCode.INVALID_EMAIL_FORMAT);
+        }
+        if (password == null || password.isBlank() || password.length() < 8) {
+            throw new UserException(UserErrorCode.INVALID_INPUT);
+        }
+        if (name == null || name.isBlank()) {
+            throw new UserException(UserErrorCode.INVALID_NAME_FORMAT);
+        }
     }
 }

@@ -52,10 +52,11 @@ public class UserServiceSecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/users/signup").permitAll()
-                        .requestMatchers("/internal/**").permitAll()
+                        .requestMatchers("/internal/**").authenticated() // permitAll()에서 authenticated()로 보안 강화
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(org.springframework.security.config.Customizer.withDefaults()));
 
         if (loginFilter != null) {
             http.addFilterBefore(loginFilter, UsernamePasswordAuthenticationFilter.class);

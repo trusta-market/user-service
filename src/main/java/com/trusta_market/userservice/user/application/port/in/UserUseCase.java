@@ -40,13 +40,13 @@ public interface UserUseCase {
     // 관리자 조회용 사용자 목록 페이지 조회
     DomainPage<UserResult> getUserPage(int page, int size, UserStatus userStatus, Role role);
 
-    // 유저 데이터 변경 가능 상태 여부 검증
+    // 관리자 승인 대기 상태 사용자 승인
     UserResult approveUser(UUID userId);
 
     // 관리자 승인 대기 상태 사용자 거절
     UserResult rejectUser(UUID userId, String reason);
 
-    // 유저 활성 상태(APPROVED) 여부 검증
+    // 사용자의 배송지 목록을 조회한다.
     List<AddressResult> getAddressList(UUID userId);
 
     // 사용자 배송지 등록
