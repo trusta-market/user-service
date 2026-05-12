@@ -14,9 +14,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+// 유저 도메인의 영속성 출력 포트
 public interface UserRepository {
     User save(User user);
     Optional<User> findById(UserId userId);
+    Optional<User> findByIdWithLock(UserId userId);
     Optional<User> findByKeycloakId(KeycloakId keycloakId);
     Optional<User> findByEmail(Email email);
     Optional<User> findByName(Name name);
