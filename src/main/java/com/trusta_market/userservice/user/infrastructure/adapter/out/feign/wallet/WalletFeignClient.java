@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 /**
  * Wallet 서비스 API 호출을 위한 Feign Client
  */
-@FeignClient(name = "wallet-service", url = "${app.services.wallet.url:http://wallet-service}", fallback = WalletFeignClientFallback.class)
+@FeignClient(name = "wallet-service", fallback = WalletFeignClientFallback.class)
 public interface WalletFeignClient {
 
     /**
