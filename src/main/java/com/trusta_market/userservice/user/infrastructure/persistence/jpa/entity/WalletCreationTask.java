@@ -17,6 +17,8 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 public class WalletCreationTask {
 
+    public static final int MAX_RETRY_COUNT = 5;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,6 +48,10 @@ public class WalletCreationTask {
         this.retryCount = 0;
     }
 
+    public boolean isMaxRetriesExceeded() {
+        return this.retryCount >= MAX_RETRY_COUNT;
+    }
+
     public void complete() {
         this.status = TaskStatus.COMPLETED;
     }
@@ -53,7 +59,6 @@ public class WalletCreationTask {
     public void fail(String errorMessage) {
         this.status = TaskStatus.FAILED;
         this.lastErrorMessage = errorMessage;
-        this.retryCount++;
     }
 
     public void retry() {

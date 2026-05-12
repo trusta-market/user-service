@@ -20,14 +20,11 @@ public class WalletRetryScheduler {
     private final WalletCreationTaskRepository walletCreationTaskRepository;
     private final WalletPort walletPort;
 
-    /**
-     * 매 1분마다 지갑 생성에 실패했던 PENDING 상태의 작업들을 재시도합니다.
-     */
     @Scheduled(fixedDelay = 60000)
     @Transactional
     public void retryWalletCreation() {
         List<WalletCreationTask> pendingTasks = walletCreationTaskRepository.findAllByStatus(WalletCreationTask.TaskStatus.PENDING);
-        
+
         if (pendingTasks.isEmpty()) {
             return;
         }
@@ -38,19 +35,30 @@ public class WalletRetryScheduler {
             try {
                 log.info("Retrying wallet creation for user: {}", task.getUserId());
                 boolean success = walletPort.createWallet(new UserId(task.getUserId()));
-                
+
                 if (success) {
                     task.complete();
                     log.info("Successfully completed wallet creation task for user: {}", task.getUserId());
                 } else {
-                    task.retry(); // 카운트 증가 및 PENDING 유지
-                    log.warn("Retry failed for user: {}. Retry count: {}. Will try again later.", task.getUserId(), task.getRetryCount());
+                    handleRetryFailure(task, "Wallet service returned failure");
                 }
             } catch (Exception e) {
-                task.retry(); // 예외 발생 시에도 카운트 증가 및 PENDING 유지
-                log.error("Error during retry for user: {}. Error: {}. Retry count: {}", task.getUserId(), e.getMessage(), task.getRetryCount());
+                log.error("Error during retry for user: {}", task.getUserId(), e);
+                handleRetryFailure(task, e.getMessage());
             }
-            walletCreationTaskRepository.save(task); // 변경사항 DB 반영
+            walletCreationTaskRepository.save(task);
+        }
+    }
+
+    private void handleRetryFailure(WalletCreationTask task, String errorMessage) {
+        task.retry();
+        if (task.isMaxRetriesExceeded()) {
+            task.fail(errorMessage);
+            log.error("Wallet creation permanently failed for user: {}. Retry count: {}. Moved to FAILED.",
+                    task.getUserId(), task.getRetryCount());
+        } else {
+            log.warn("Retry failed for user: {}. Retry count: {}. Will try again later.",
+                    task.getUserId(), task.getRetryCount());
         }
     }
 }

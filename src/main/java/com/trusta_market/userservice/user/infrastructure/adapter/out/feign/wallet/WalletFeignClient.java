@@ -1,6 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet;
 
 import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateRequest;
+import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,5 +19,5 @@ public interface WalletFeignClient {
      * @return 성공 여부
      */
     @PostMapping("/internal/v1/wallets")
-    boolean createWallet(@RequestBody WalletCreateRequest request);
+    WalletCreateResponse createWallet(@RequestBody WalletCreateRequest request);
 }

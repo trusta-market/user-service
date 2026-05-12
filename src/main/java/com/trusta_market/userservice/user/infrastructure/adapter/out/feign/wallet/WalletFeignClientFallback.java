@@ -1,6 +1,7 @@
 package com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet;
 
 import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateRequest;
+import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -10,8 +11,8 @@ import org.springframework.stereotype.Component;
 public class WalletFeignClientFallback implements WalletFeignClient {
 
     @Override
-    public boolean createWallet(WalletCreateRequest request) {
+    public WalletCreateResponse createWallet(WalletCreateRequest request) {
         log.error("Wallet service is unavailable or circuit breaker opened for user: {}", request.userId());
-        return false;
+        return new WalletCreateResponse(false);
     }
 }
