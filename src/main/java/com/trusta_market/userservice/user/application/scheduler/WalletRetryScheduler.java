@@ -43,12 +43,14 @@ public class WalletRetryScheduler {
                     task.complete();
                     log.info("Successfully completed wallet creation task for user: {}", task.getUserId());
                 } else {
-                    log.warn("Retry failed for user: {}. Will try again later.", task.getUserId());
+                    task.retry(); // 카운트 증가 및 PENDING 유지
+                    log.warn("Retry failed for user: {}. Retry count: {}. Will try again later.", task.getUserId(), task.getRetryCount());
                 }
             } catch (Exception e) {
-                task.fail(e.getMessage());
-                log.error("Failed to retry wallet creation for user: {}. Error: {}", task.getUserId(), e.getMessage());
+                task.retry(); // 예외 발생 시에도 카운트 증가 및 PENDING 유지
+                log.error("Error during retry for user: {}. Error: {}. Retry count: {}", task.getUserId(), e.getMessage(), task.getRetryCount());
             }
+            walletCreationTaskRepository.save(task); // 변경사항 DB 반영
         }
     }
 }
