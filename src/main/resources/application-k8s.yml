@@ -1,0 +1,23 @@
+# K8s 환경 전용 override (SPRING_PROFILES_ACTIVE=k8s 일 때만 로드).
+# username/password 같은 민감 값은 여기 박지 않음 — Deployment env (secretKeyRef) 로 주입.
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server/eureka/
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak/realms/trusta
+  datasource:
+    # postgres Service (도메인 공유) — username/password 는 env 가 채움
+    url: jdbc:postgresql://postgres:5432/trusta_market
+
+trusta:
+  keycloak:
+    server-url: http://keycloak
+    realm: trusta
+    # admin-cli / admin / password 는 application.yml 의 default 또는 Deployment env 로
