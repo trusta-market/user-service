@@ -9,16 +9,15 @@ WORKDIR /workspace
 
 ARG GPR_USER
 ARG GPR_TOKEN
-ENV GPR_USER=$GPR_USER
-ENV GPR_TOKEN=$GPR_TOKEN
 
 COPY settings.gradle build.gradle ./
 COPY gradle ./gradle
-RUN gradle dependencies --no-daemon
+# ARG 는 RUN 내에서 환경변수로 접근 가능 (ENV 로 박으면 layer 에 잔존하므로 ENV 사용 X).
+RUN GPR_USER="$GPR_USER" GPR_TOKEN="$GPR_TOKEN" gradle dependencies --no-daemon
 
 COPY src ./src
 
-RUN gradle bootJar --no-daemon \
+RUN GPR_USER="$GPR_USER" GPR_TOKEN="$GPR_TOKEN" gradle bootJar --no-daemon \
  && cp build/libs/*.jar /workspace/app.jar
 
 # ──────────────────────────────────────────────────────────────

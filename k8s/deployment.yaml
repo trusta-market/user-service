@@ -14,11 +14,16 @@ spec:
       labels:
         app: user-service
     spec:
+      # SA 토큰 자동 마운트 차단 — Pod 가 K8s API 접근 안 함 (도메인 서비스라 불필요).
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        # seccomp: 컨테이너 안에서 시스템 콜 화이트리스트 적용 (RuntimeDefault = runtime 권장).
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: user-service
           image: asia-northeast3-docker.pkg.dev/trusta-market-id/trusta-registry-services/user-service:PLACEHOLDER
