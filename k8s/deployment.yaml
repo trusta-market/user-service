@@ -54,11 +54,11 @@ spec:
                   key: KEYCLOAK_ADMIN_PASSWORD
           resources:
             requests:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 700m
+              memory: 2Gi
             limits:
               cpu: 1000m
-              memory: 2Gi
+              memory: 2500Mi
           startupProbe:
             httpGet:
               path: /actuator/health
