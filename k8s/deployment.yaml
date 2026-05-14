@@ -6,6 +6,11 @@ metadata:
     app: user-service
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: user-service
@@ -54,7 +59,7 @@ spec:
                   key: KEYCLOAK_ADMIN_PASSWORD
           resources:
             requests:
-              cpu: 700m
+              cpu: 500m
               memory: 2Gi
             limits:
               cpu: 1000m
