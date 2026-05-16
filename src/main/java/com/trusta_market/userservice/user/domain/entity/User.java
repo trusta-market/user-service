@@ -146,6 +146,14 @@ public class User extends BaseUserEntity {
         this.userStatus = UserStatus.APPROVED;
     }
 
+    // 관리자: 역할 변경 (MEMBER ↔ INSPECTOR)
+    public void changeRole(Role newRole) {
+        checkNotWithdrawn();
+        if (newRole == null) throw new UserException(UserErrorCode.INVALID_INPUT);
+        if (this.role == Role.ADMIN) throw new UserException(UserErrorCode.INVALID_STATUS_TRANSITION);
+        this.role = newRole;
+    }
+
     private void checkNotWithdrawn() {
         if (isDeleted()) {
             throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);

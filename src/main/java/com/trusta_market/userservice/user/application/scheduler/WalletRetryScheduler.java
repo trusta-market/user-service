@@ -57,8 +57,9 @@ public class WalletRetryScheduler {
             log.error("Wallet creation permanently failed for user: {}. Retry count: {}. Moved to FAILED.",
                     task.getUserId(), task.getRetryCount());
         } else {
-            log.warn("Retry failed for user: {}. Retry count: {}. Will try again later.",
+            log.warn("Retry failed for user: {}. Retry count: {}",
                     task.getUserId(), task.getRetryCount());
+
         }
     }
 }

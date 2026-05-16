@@ -51,4 +51,7 @@ public interface UserUseCase {
     List<UserInternalResult> getInternalUserList(List<UUID> userIds);
 
     void validateInternalUser(UUID userId);
+
+    // 관리자: 유저 역할 변경
+    UserResult changeUserRole(UUID userId, Role role);
 }

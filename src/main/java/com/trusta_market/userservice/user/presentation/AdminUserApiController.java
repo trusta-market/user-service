@@ -5,6 +5,7 @@ import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.vo.UserStatus;
+import com.trusta_market.userservice.user.presentation.dto.request.ChangeRoleRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserRejectRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserSuspendRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
@@ -74,6 +75,14 @@ public class AdminUserApiController {
     public ResponseEntity<GetUserResponse> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
         suspensionUseCase.unsuspendUser(userId, request.reason());
         var result = userUseCase.getUser(userId);
+        return ResponseEntity.ok(GetUserResponse.from(result));
+    }
+
+    // 유저 역할 변경 API (MEMBER ↔ INSPECTOR)
+    @PatchMapping("/{userId}/role")
+    public ResponseEntity<GetUserResponse> changeUserRole(@PathVariable UUID userId,
+                                                          @RequestBody ChangeRoleRequest request) {
+        var result = userUseCase.changeUserRole(userId, request.role());
         return ResponseEntity.ok(GetUserResponse.from(result));
     }
 }
