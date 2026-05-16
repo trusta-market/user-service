@@ -244,12 +244,17 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         return UserResult.from(userRepository.save(user));
     }
 
-    // 관리자: 유저 역할 변경
+    // 관리자: 유저 역할 변경 (DB + Keycloak 동기화)
     @Override
     public UserResult changeUserRole(UUID userId, Role role) {
         User user = findUserById(userId);
         user.changeRole(role);
-        return UserResult.from(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+
+        // Keycloak Realm 역할도 동기화 (Gateway가 JWT realm_access.roles 기준으로 권한 판단)
+        identityProviderPort.assignRole(user.getKeycloakId(), role);
+
+        return UserResult.from(savedUser);
     }
 
     // 타 서비스용: 유저 내부 정보 조회

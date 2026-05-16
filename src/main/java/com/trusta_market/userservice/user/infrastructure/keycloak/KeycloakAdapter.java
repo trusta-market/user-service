@@ -4,13 +4,15 @@ import com.trusta_market.userservice.user.application.port.out.IdentityProviderP
 import com.trusta_market.userservice.user.domain.vo.Email;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Name;
+import com.trusta_market.userservice.user.domain.vo.Role;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.domain.exception.UserException;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,9 @@ public class KeycloakAdapter implements IdentityProviderPort {
     private final String clientId;
     private final String username;
     private final String password;
+
+    // 관리자가 변경할 수 있는 역할 목록 (assignRole 시 먼저 모두 제거 후 새 역할 부여)
+    private static final List<Role> MANAGED_ROLES = List.of(Role.MEMBER, Role.INSPECTOR);
 
     public KeycloakAdapter(
             @Value("${trusta.keycloak.server-url}") String serverUrl,
@@ -109,4 +114,41 @@ public class KeycloakAdapter implements IdentityProviderPort {
             keycloak.close();
         }
     }
+
+    // Keycloak Realm 역할 변경: 기존 역할 제거 → 새 역할 부여 (Gateway JWT 동기화)
+    @Override
+    public void assignRole(KeycloakId keycloakId, Role role) {
+        Keycloak keycloak = getKeycloakInstance();
+        try {
+            UserResource userResource = keycloak.realm(realm).users().get(keycloakId.value());
+
+            // 1) 기존 관리 대상 역할 제거
+            List<RoleRepresentation> rolesToRemove = MANAGED_ROLES.stream()
+                    .map(r -> findRealmRole(keycloak, r))
+                    .toList();
+            userResource.roles().realmLevel().remove(rolesToRemove);
+
+            // 2) 새 역할 부여
+            RoleRepresentation newRole = findRealmRole(keycloak, role);
+            userResource.roles().realmLevel().add(List.of(newRole));
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println(">>> Keycloak 역할 변경 중 예외 발생: " + e.getMessage());
+            throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
+        } finally {
+            keycloak.close();
+        }
+    }
+
+    // Keycloak Realm에서 역할 이름으로 RoleRepresentation 조회 (없으면 KEYCLOAK_ERROR)
+    private RoleRepresentation findRealmRole(Keycloak keycloak, Role role) {
+        try {
+            return keycloak.realm(realm).roles().get(role.name()).toRepresentation();
+        } catch (Exception e) {
+            System.err.println(">>> Keycloak Realm 역할을 찾을 수 없음: " + role.name());
+            throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
+        }
+    }
 }
+
