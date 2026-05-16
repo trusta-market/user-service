@@ -21,10 +21,10 @@ public class WalletAdapter implements WalletPort {
         log.info("Requesting wallet creation for user: {}", userId.value());
         try {
             WalletCreateResponse response = walletFeignClient.createWallet(new WalletCreateRequest(userId.value()));
-            if (response.result()) {
+            if (response.isSuccess()) {
                 log.info("Successfully requested wallet creation for user: {}", userId.value());
             }
-            return response.result();
+            return response.isSuccess();
         } catch (FeignException e) {
             if (e.status() == 400 || e.status() == 409) {
                 log.info("Wallet already exists for user: {}", userId.value());
