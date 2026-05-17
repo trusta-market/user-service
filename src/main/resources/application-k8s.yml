@@ -1,6 +1,15 @@
 # K8s 환경 전용 override (SPRING_PROFILES_ACTIVE=k8s 일 때만 로드).
 # username/password 같은 민감 값은 여기 박지 않음 — Deployment env (secretKeyRef) 로 주입.
 
+server:
+  # Tomcat — 부하 테스트 결과로 default threads.max=200 이 단일 pod 의 동시 처리 한계.
+  # 800 으로 증액 (stack ~800MB, memory limit 2Gi 안). accept-count 도 같이 늘려서 queue 더 받음.
+  tomcat:
+    threads:
+      max: 800
+    accept-count: 300
+    max-connections: 20000
+
 eureka:
   client:
     service-url:
@@ -15,6 +24,10 @@ spring:
   datasource:
     # postgres Service (도메인 공유) — username/password 는 env 가 채움
     url: jdbc:postgresql://postgres:5432/trusta_market
+    # HikariCP pool — default 10 이 thread 800 대비 너무 작아서 thread 가 pool 대기.
+    # postgres max_connections=700 안에서 7 DB service × pool 18 × HPA max 5 = 630 (안전선).
+    hikari:
+      maximum-pool-size: 18
   jpa:
     hibernate:
       ddl-auto: validate
