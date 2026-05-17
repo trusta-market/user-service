@@ -29,6 +29,7 @@ spring:
       hibernate:
         format_sql: ${JPA_FORMAT_SQL:true}
         dialect: ${JPA_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
+        default_schema: p_user
 
   security:
     oauth2:
