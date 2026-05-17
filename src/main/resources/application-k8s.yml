@@ -15,6 +15,14 @@ spring:
   datasource:
     # postgres Service (도메인 공유) — username/password 는 env 가 채움
     url: jdbc:postgresql://postgres:5432/trusta_market
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: p_user
+    liquibase-schema: p_user
 
 trusta:
   # common 의 LoginFilter 가 gateway 의 X-User-* 헤더 → SecurityContext 로 주입.
@@ -25,13 +33,3 @@ trusta:
     server-url: http://keycloak
     realm: trusta
     # admin-cli / admin / password 는 application.yml 의 default 또는 Deployment env 로
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-
-  liquibase:
-    enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.yaml
-    default-schema: p_user
-    liquibase-schema: p_user
