@@ -23,7 +23,8 @@ spring:
           issuer-uri: http://keycloak/realms/trusta
   datasource:
     # postgres Service (도메인 공유) — username/password 는 env 가 채움
-    url: jdbc:postgresql://postgres:5432/trusta_market
+    # DB_HOST env 로 endpoint 주입 (Secret domain-postgres-secrets). default = postgres (in-cluster fallback).
+    url: jdbc:postgresql://${DB_HOST:postgres}:5432/trusta_market
     # HikariCP pool — default 10 이 thread 800 대비 너무 작아서 thread 가 pool 대기.
     # postgres max_connections=700 안에서 7 DB service × pool 18 × HPA max 5 = 630 (안전선).
     hikari:
