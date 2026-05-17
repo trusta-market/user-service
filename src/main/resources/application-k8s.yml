@@ -28,6 +28,14 @@ spring:
     # postgres max_connections=700 안에서 7 DB service × pool 18 × HPA max 5 = 630 (안전선).
     hikari:
       maximum-pool-size: 18
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: p_user
+    liquibase-schema: p_user
 
 trusta:
   # common 의 LoginFilter 가 gateway 의 X-User-* 헤더 → SecurityContext 로 주입.
