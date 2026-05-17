@@ -37,10 +37,11 @@ public class AccountService implements AccountUseCase {
 
     @Override
     public AccountResult createAccount(CreateAccountCommand command) {
+        //todo: 내부 userId 삭제 또는 수정
         UUID internalUserId = userValidationUseCase.resolveInternalId(command.userId());
         userValidationUseCase.validateUserCanMutate(internalUserId);
 
-        if (userAccountRepository.countActiveAccountsByUserId(internalUserId) >= 5) {
+        if (userAccountRepository.countActiveAccountsByUserId(command.userId()) >= 5) {
             throw new AccountException(AccountErrorCode.ACCOUNT_LIMIT_EXCEEDED);
         }
 
@@ -54,9 +55,9 @@ public class AccountService implements AccountUseCase {
             throw new AccountException(AccountErrorCode.VERIFICATION_FAILED);
         }
 
-        boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(internalUserId) == 0;
+        boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(command.userId()) == 0;
         UserAccount account = UserAccount.create(
-                internalUserId,
+                command.userId(), //keycloakId로 변경
                 bankCodeVO,
                 accountNumberVO,
                 accountHolderVO,
@@ -71,8 +72,9 @@ public class AccountService implements AccountUseCase {
     @Override
     @Transactional(readOnly = true)
     public List<AccountResult> getAccountList(UUID userId) {
+        //todo: 내부 userId 삭제 또는 수정
         UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
-        return userAccountRepository.findAllActiveAccountsByUserId(internalUserId)
+        return userAccountRepository.findAllActiveAccountsByUserId(userId)
                 .stream()
                 .map(AccountResult::from)
                 .toList();
@@ -81,27 +83,30 @@ public class AccountService implements AccountUseCase {
     @Override
     @Transactional(readOnly = true)
     public AccountResult getDefaultAccount(UUID userId) {
+        //todo: 내부 userId 삭제 또는 수정
         UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
-        return userAccountRepository.findDefaultAccountByUserId(internalUserId)
+        return userAccountRepository.findDefaultAccountByUserId(userId)
                 .map(AccountResult::from)
                 .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     @Override
     public void deleteAccount(UUID userId, UUID accountId) {
+        //todo: 내부 userId 삭제 또는 수정
         UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
         userValidationUseCase.validateUserCanMutate(internalUserId);
-        UserAccount account = findOwnedAccount(internalUserId, accountId);
-        account.delete(internalUserId);
+        UserAccount account = findOwnedAccount(userId, accountId);
+        account.delete(userId);
         userAccountRepository.save(account);
     }
 
     @Override
     public void changeAccountDefault(UUID userId, UUID accountId) {
+        //todo: 내부 userId 삭제 또는 수정
         UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
         userValidationUseCase.validateUserCanMutate(internalUserId);
-        UserAccount account = findOwnedAccount(internalUserId, accountId);
-        userAccountRepository.clearDefaultAccount(internalUserId);
+        UserAccount account = findOwnedAccount(userId, accountId);
+        userAccountRepository.clearDefaultAccount(userId);
         account.markAsDefault();
         userAccountRepository.save(account);
     }
@@ -130,8 +135,7 @@ public class AccountService implements AccountUseCase {
     @Override
     @Transactional(readOnly = true)
     public AccountResult getVerifiedDefaultAccount(UUID userId) {
-        UUID internalUserId = userValidationUseCase.resolveInternalId(userId);
-        return userAccountRepository.findDefaultAccountByUserId(internalUserId)
+        return userAccountRepository.findDefaultAccountByUserId(userId)
                 .filter(UserAccount::isVerified) // 인증된 계좌만 필터링
                 .map(AccountResult::from)
                 .orElseThrow(() -> new AccountException(AccountErrorCode.ACCOUNT_NOT_VERIFIED));
