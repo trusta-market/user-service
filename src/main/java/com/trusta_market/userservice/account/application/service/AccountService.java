@@ -56,7 +56,7 @@ public class AccountService implements AccountUseCase {
 
         boolean makeDefault = userAccountRepository.countActiveAccountsByUserId(internalUserId) == 0;
         UserAccount account = UserAccount.create(
-                internalUserId,
+                command.userId(),
                 bankCodeVO,
                 accountNumberVO,
                 accountHolderVO,
