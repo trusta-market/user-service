@@ -50,6 +50,7 @@ dependencies {
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     implementation 'com.trustamarket:common:0.3.0-SNAPSHOT'
     implementation 'org.keycloak:keycloak-admin-client:26.0.9'
+    implementation 'org.liquibase:liquibase-core'
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'
