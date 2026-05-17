@@ -25,3 +25,13 @@ trusta:
     server-url: http://keycloak
     realm: trusta
     # admin-cli / admin / password 는 application.yml 의 default 또는 Deployment env 로
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: p_user
+    liquibase-schema: p_user
