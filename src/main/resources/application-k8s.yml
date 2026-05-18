@@ -25,10 +25,10 @@ spring:
     # postgres Service (도메인 공유) — username/password 는 env 가 채움
     # DB_HOST env 로 endpoint 주입 (Secret domain-postgres-secrets). default = postgres (in-cluster fallback).
     url: jdbc:postgresql://${DB_HOST:postgres}:5432/trusta_market
-    # HikariCP pool — Cloud SQL max_connections=2500 안에서 6 service 통일 + product 만 2배 (120).
-    # 합 = 6 × 60 × 5 + 5 × 120 = 2400 / 2500 ✓.
+    # HikariCP pool — 8차 결과로 pool 60 은 GC pause + tail latency 폭증 (DB 한가, connection state heap 점유).
+    # 6차 sweet spot (pool 18) 으로 복귀.
     hikari:
-      maximum-pool-size: 60
+      maximum-pool-size: 18
   jpa:
     hibernate:
       ddl-auto: validate
