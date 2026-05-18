@@ -27,16 +27,16 @@ public class UserEventHandler {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleUserCreatedEvent(UserCreatedEvent event) {
-        log.info("Starting wallet creation process for user: {}", event.userId().value());
-
         UUID userId = event.userId().value();
+        log.info("Starting wallet creation process for user: {}", userId);
 
-        // PENDING 태스크 선저장 — 이후 스케줄러가 재시도 가능하도록
+        // PENDING 태스크 선저장 — 로컬 DB 무결성을 위해 내부 userId로 기록!
         WalletCreationTask task = walletCreationTaskRepository.findByUserId(userId)
                 .orElseGet(() -> walletCreationTaskRepository.save(new WalletCreationTask(userId)));
 
         try {
-            boolean success = walletPort.createWallet(event.userId());
+            // 외부 지갑 서비스 연동 시에는 Keycloak ID 전달!
+            boolean success = walletPort.createWallet(event.keycloakId());
 
             if (success) {
                 task.complete();

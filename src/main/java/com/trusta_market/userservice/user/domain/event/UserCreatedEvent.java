@@ -1,6 +1,7 @@
 package com.trusta_market.userservice.user.domain.event;
 
 import com.trusta_market.userservice.user.domain.vo.Email;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 
@@ -12,16 +13,17 @@ import java.util.Objects;
  */
 public record UserCreatedEvent(
         UserId userId,
+        KeycloakId keycloakId,
         Email email,
-        Name name
-) {
+        Name name) {
     public UserCreatedEvent {
         Objects.requireNonNull(userId, "UserId must not be null");
+        Objects.requireNonNull(keycloakId, "KeycloakId must not be null");
         Objects.requireNonNull(email, "Email must not be null");
         Objects.requireNonNull(name, "Name must not be null");
     }
 
-    public static UserCreatedEvent of(UserId userId, Email email, Name name) {
-        return new UserCreatedEvent(userId, email, name);
+    public static UserCreatedEvent of(UserId userId, KeycloakId keycloakId, Email email, Name name) {
+        return new UserCreatedEvent(userId, keycloakId, email, name);
     }
 }

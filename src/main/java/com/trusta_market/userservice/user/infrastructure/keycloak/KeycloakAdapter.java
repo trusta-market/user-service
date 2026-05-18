@@ -16,10 +16,12 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Component
 public class KeycloakAdapter implements IdentityProviderPort {
 
@@ -57,7 +59,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
 
     @Override
     public KeycloakId createIdentity(Email email, String password, Name name) {
-        System.out.println(">>> Keycloak 사용자 생성 시도: " + email.value());
+        log.info("Attempting to create Keycloak user: {}", email.value());
         Keycloak keycloak = getKeycloakInstance();
         
         UserRepresentation user = new UserRepresentation();
@@ -76,7 +78,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
         user.setCredentials(Collections.singletonList(credential));
 
         try (Response response = keycloak.realm(realm).users().create(user)) {
-            System.out.println(">>> Keycloak 응답 상태: " + response.getStatus());
+            log.info("Keycloak response status: {}", response.getStatus());
             
             if (response.getStatus() == 409) {
                 throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
@@ -84,7 +86,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
             
             if (response.getStatus() != 201) {
                 String errorEntity = response.hasEntity() ? response.readEntity(String.class) : "no entity";
-                System.out.println(">>> Keycloak 생성 실패 상세: " + errorEntity);
+                log.error("Failed to create Keycloak user. Details: {}", errorEntity);
                 throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
             }
 
@@ -94,11 +96,10 @@ public class KeycloakAdapter implements IdentityProviderPort {
 
             // 생성된 유저의 ID 추출 (Location 헤더에서 가져옴)
             String userId = response.getLocation().getPath().replaceAll(".*/([^/]+)$", "$1");
-            System.out.println(">>> Keycloak 사용자 생성 성공 ID: " + userId);
+            log.info("Successfully created Keycloak user. ID: {}", userId);
             return KeycloakId.of(userId);
         } catch (Exception e) {
-            System.err.println(">>> Keycloak 연동 중 예외 발생!");
-            e.printStackTrace();
+            log.error("Exception occurred during Keycloak integration", e);
             throw e;
         } finally {
             keycloak.close();
@@ -134,7 +135,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
         } catch (UserException e) {
             throw e;
         } catch (Exception e) {
-            System.err.println(">>> Keycloak 역할 변경 중 예외 발생: " + e.getMessage());
+            log.error("Exception occurred while changing Keycloak role: {}", e.getMessage(), e);
             throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
         } finally {
             keycloak.close();
@@ -146,7 +147,7 @@ public class KeycloakAdapter implements IdentityProviderPort {
         try {
             return keycloak.realm(realm).roles().get(role.name()).toRepresentation();
         } catch (Exception e) {
-            System.err.println(">>> Keycloak Realm 역할을 찾을 수 없음: " + role.name());
+            log.error("Keycloak Realm role not found: {}", role.name(), e);
             throw new UserException(UserErrorCode.KEYCLOAK_ERROR);
         }
     }

@@ -24,10 +24,6 @@ public class UserServiceSecurityConfig {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private LoginFilter loginFilter;
 
-    public UserServiceSecurityConfig() {
-        System.out.println(">>> UserServiceSecurityConfig 로드됨!");
-    }
-
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
@@ -35,6 +31,7 @@ public class UserServiceSecurityConfig {
     }
 
     @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnBean(LoginFilter.class)
     public FilterRegistrationBean<LoginFilter> loginFilterRegistration(LoginFilter filter) {
         FilterRegistrationBean<LoginFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false); // Servlet 글로벌 필터 등록 방지! (Spring Security 필터 체인 안에서만 돌게 함)

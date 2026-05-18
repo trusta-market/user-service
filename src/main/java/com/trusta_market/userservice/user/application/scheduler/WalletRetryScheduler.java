@@ -1,7 +1,9 @@
 package com.trusta_market.userservice.user.application.scheduler;
 
-import com.trusta_market.userservice.user.domain.vo.UserId;
+import com.trusta_market.userservice.user.application.port.out.UserRepository;
 import com.trusta_market.userservice.user.application.port.out.WalletPort;
+import com.trusta_market.userservice.user.domain.entity.User;
+import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.entity.WalletCreationTask;
 import com.trusta_market.userservice.user.infrastructure.persistence.jpa.entity.WalletCreationTaskRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ import java.util.List;
 public class WalletRetryScheduler {
 
     private final WalletCreationTaskRepository walletCreationTaskRepository;
+    private final UserRepository userRepository;
     private final WalletPort walletPort;
 
     @Scheduled(fixedDelay = 60000)
@@ -34,7 +37,12 @@ public class WalletRetryScheduler {
         for (WalletCreationTask task : pendingTasks) {
             try {
                 log.info("Retrying wallet creation for user: {}", task.getUserId());
-                boolean success = walletPort.createWallet(new UserId(task.getUserId()));
+                
+                // 내부 userId로 유저 조회 후 keycloakId 획득
+                User user = userRepository.findById(UserId.of(task.getUserId()))
+                        .orElseThrow(() -> new IllegalArgumentException("User not found for ID: " + task.getUserId()));
+
+                boolean success = walletPort.createWallet(user.getKeycloakId());
 
                 if (success) {
                     task.complete();

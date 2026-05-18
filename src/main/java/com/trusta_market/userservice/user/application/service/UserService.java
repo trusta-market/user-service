@@ -68,7 +68,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         User savedUser = userRepository.save(user);
 
         // 도메인 이벤트 발행 (지갑 생성 등 후속 처리 트리거)
-        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getEmail(), savedUser.getName()));
+        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getKeycloakId(), savedUser.getEmail(), savedUser.getName()));
 
         return UserResult.from(savedUser);
     }
@@ -86,7 +86,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         User savedUser = userRepository.save(User.create(command.keycloakId(), command.email(), command.name()));
         
         // 도메인 이벤트 발행 (지갑 생성 등 후속 처리 트리거)
-        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getEmail(), savedUser.getName()));
+        eventPublisher.publishEvent(UserCreatedEvent.of(savedUser.getUserId(), savedUser.getKeycloakId(), savedUser.getEmail(), savedUser.getName()));
         
         return UserResult.from(savedUser);
     }
