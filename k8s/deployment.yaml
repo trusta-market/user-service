@@ -21,6 +21,14 @@ spec:
     spec:
       # SA 토큰 자동 마운트 차단 — Pod 가 K8s API 접근 안 함 (도메인 서비스라 불필요).
       automountServiceAccountToken: false
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: Exists
+              topologyKey: kubernetes.io/hostname
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
