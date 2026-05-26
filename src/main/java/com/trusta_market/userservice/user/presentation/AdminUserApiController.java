@@ -37,58 +37,44 @@ public class AdminUserApiController {
     // 유저 목록 페이징 조회 API
     @Operation(summary = "유저 목록 페이징 조회", description = "status / role 필터로 유저 페이지 조회")
     @GetMapping
-    public ResponseEntity<DomainPage<GetUserResponse>> getUserList(
+    public ResponseEntity<CommonResponse<DomainPage<GetUserResponse>>> getUserList(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) UserStatus userStatus,
             @RequestParam(required = false) Role role) {
-        var results = userUseCase.getUserPage(page, size, userStatus, role);
-        return ResponseEntity.ok(results.map(GetUserResponse::from));
+        var result = userUseCase.getUserPage(page, size, userStatus, role).map(GetUserResponse::from);
+        return ResponseEntity.ok(CommonResponse.of(200, result));
     }
 
     // 유저 상세 정보 조회 API (추가)
     @GetMapping("/{userId}")
-    public ResponseEntity<GetUserResponse> getUserDetail(@PathVariable UUID userId) {
+    public ResponseEntity<CommonResponse<GetUserResponse>> getUserDetail(@PathVariable UUID userId) {
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(GetUserResponse.from(result));
-    }
-
-    // 유저 가입 승인 API
-    @PatchMapping("/{userId}/approve")
-    public ResponseEntity<GetUserResponse> approveUser(@PathVariable UUID userId) {
-        var result = userUseCase.approveUser(userId);
-        return ResponseEntity.ok(GetUserResponse.from(result));
-    }
-
-    // 유저 가입 거절 API
-    @PostMapping("/{userId}/reject")
-    public ResponseEntity<GetUserResponse> rejectUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
-        var result = userUseCase.rejectUser(userId, request.reason());
-        return ResponseEntity.ok(GetUserResponse.from(result));
+        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
     }
 
     // 유저 활동 정지 API
     @PostMapping("/{userId}/suspend")
-    public ResponseEntity<GetUserResponse> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
+    public ResponseEntity<CommonResponse<GetUserResponse>> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
         suspensionUseCase.suspendUser(userId, request.reason(), request.expiresAt());
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(GetUserResponse.from(result));
+        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
     }
 
     // 유저 활동 정지 해제 API
     @PatchMapping("/{userId}/unsuspend")
-    public ResponseEntity<GetUserResponse> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
+    public ResponseEntity<CommonResponse<GetUserResponse>> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
         suspensionUseCase.unsuspendUser(userId, request.reason());
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(GetUserResponse.from(result));
+        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
     }
 
     // 유저 역할 변경 API (MEMBER ↔ INSPECTOR)
     @Operation(summary = "유저 역할 변경", description = "MEMBER ↔ INSPECTOR. ADMIN 으로 승격은 가능, ADMIN 강등은 불가")
     @PatchMapping("/{userId}/role")
-    public ResponseEntity<GetUserResponse> changeUserRole(@PathVariable UUID userId,
+    public ResponseEntity<CommonResponse<GetUserResponse>> changeUserRole(@PathVariable UUID userId,
                                                           @RequestBody ChangeRoleRequest request) {
         var result = userUseCase.changeUserRole(userId, request.role());
-        return ResponseEntity.ok(GetUserResponse.from(result));
+        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
     }
 }

@@ -40,13 +40,6 @@ public class InternalUserApiController {
         return ResponseEntity.ok(result.stream().map(UserInternalResponse::from).toList());
     }
 
-    // 유저 유효성 검증 전용 (존재 및 상태 확인)
-    @GetMapping("/{userId}/validate")
-    public ResponseEntity<Void> validateUser(@PathVariable UUID userId) {
-        userUseCase.validateInternalUser(userId);
-        return ResponseEntity.ok().build();
-    }
-
     // 유저 멤버십 정보 조회
     @GetMapping("/{userId}/membership")
     public ResponseEntity<MembershipInternalResponse> getMembership(@PathVariable UUID userId) {
