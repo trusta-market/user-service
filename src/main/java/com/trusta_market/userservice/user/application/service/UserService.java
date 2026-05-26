@@ -55,9 +55,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         if (userRepository.existsByEmail(command.email())) {
             throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
         }
-        if (userRepository.existsByName(command.name())) {
-            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
-        }
         
         Email email = command.email();
         Name name = command.name();
@@ -78,9 +75,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     public UserResult createUser(CreateUserCommand command) {
         if (userRepository.existsByEmail(command.email())) {
             throw new UserException(UserErrorCode.DUPLICATE_EMAIL);
-        }
-        if (userRepository.existsByName(command.name())) {
-            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
         }
 
         User savedUser = userRepository.save(User.create(command.keycloakId(), command.email(), command.name()));
@@ -110,10 +104,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     public UserResult updateUser(KeycloakId keycloakId, UpdateUserCommand command) {
         User user = findUserByKeycloakId(keycloakId);
         assertUserCanMutate(user); // 변경 가능 상태인지 검증
-        if (command.name() != null && !command.name().equals(user.getName())
-                && userRepository.existsByName(command.name())) {
-            throw new UserException(UserErrorCode.DUPLICATE_NICKNAME);
-        }
         user.updateProfile(command.name());
         return UserResult.from(userRepository.save(user));
     }
@@ -228,22 +218,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         return users.map(UserResult::from);
     }
 
-    // 관리자: 유저 가입 승인
-    @Override
-    public UserResult approveUser(UUID userId) {
-        User user = findUserById(userId);
-        user.approve();
-        return UserResult.from(userRepository.save(user));
-    }
-
-    // 관리자: 유저 가입 거절
-    @Override
-    public UserResult rejectUser(UUID userId, String reason) {
-        User user = findUserById(userId);
-        user.reject();
-        return UserResult.from(userRepository.save(user));
-    }
-
     // 관리자: 유저 역할 변경 (DB + Keycloak 동기화)
     @Override
     public UserResult changeUserRole(UUID userId, Role role) {
@@ -272,15 +246,6 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         return userRepository.findAllActiveUsersByIds(voIds).stream()
                 .map(UserInternalResult::from)
                 .toList();
-    }
-
-    // 타 서비스용: 유저 활성 상태 검증
-    @Override
-    public void validateInternalUser(UUID userId) {
-        User user = findUserById(userId);
-        if (user.getUserStatus() != UserStatus.APPROVED) {
-            throw new UserException(UserErrorCode.USER_NOT_ACTIVE);
-        }
     }
 
     // Keycloak ID 기반 유저 검색 헬퍼
@@ -328,7 +293,10 @@ public class UserService implements UserUseCase, UserValidationUseCase {
     @Override
     @Transactional(readOnly = true)
     public void validateActiveUser(UUID userId) {
-        validateInternalUser(userId);
+        User user = findUserById(userId);
+        if (user.getUserStatus() != UserStatus.APPROVED) {
+            throw new UserException(UserErrorCode.USER_NOT_ACTIVE);
+        }
     }
 
     // 유저가 데이터 변경이 가능한 상태인지 검증

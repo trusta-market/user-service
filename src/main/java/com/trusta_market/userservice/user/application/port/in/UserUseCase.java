@@ -32,10 +32,6 @@ public interface UserUseCase {
 
     DomainPage<UserResult> getUserPage(int page, int size, UserStatus userStatus, Role role);
 
-    UserResult approveUser(UUID userId);
-
-    UserResult rejectUser(UUID userId, String reason);
-
     List<AddressResult> getAddressList(UUID userId);
 
     AddressResult createAddress(CreateAddressCommand command);
@@ -49,8 +45,6 @@ public interface UserUseCase {
     UserInternalResult getInternalUser(UUID userId);
 
     List<UserInternalResult> getInternalUserList(List<UUID> userIds);
-
-    void validateInternalUser(UUID userId);
 
     // 관리자: 유저 역할 변경
     UserResult changeUserRole(UUID userId, Role role);

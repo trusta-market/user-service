@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 
 import com.trusta_market.userservice.user.domain.vo.Email;
-import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 
@@ -34,11 +33,7 @@ public interface UserJpaRepository extends JpaRepository<User, UUID> {
 
     Optional<User> findByEmailAndDeletedAtIsNull(Email email);
 
-    Optional<User> findByNameAndDeletedAtIsNull(Name name);
-
     boolean existsByEmailAndDeletedAtIsNull(Email email);
-
-    boolean existsByNameAndDeletedAtIsNull(Name name);
 
     Page<User> findAllByDeletedAtIsNull(Pageable pageable);
 

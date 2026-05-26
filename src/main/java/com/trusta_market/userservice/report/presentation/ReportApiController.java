@@ -5,6 +5,7 @@ import com.trusta_market.userservice.report.application.port.in.ReportUseCase;
 import com.trusta_market.userservice.report.presentation.dto.request.PostReportRequest;
 import com.trusta_market.userservice.report.presentation.dto.response.GetReportResponse;
 import com.trusta_market.userservice.user.infrastructure.security.SecurityUtil;
+import com.trustamarket.common.response.CommonResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class ReportApiController {
 
     // 타 사용자 신고 API
     @PostMapping
-    public ResponseEntity<GetReportResponse> createReport(@RequestBody PostReportRequest request) {
+    public ResponseEntity<CommonResponse<GetReportResponse>> createReport(@RequestBody PostReportRequest request) {
         UUID reporterUserId = SecurityUtil.getCurrentUserId()
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
 
@@ -32,6 +33,6 @@ public class ReportApiController {
                 request.reportedUserId(),
                 request.reason()));
 
-        return ResponseEntity.status(201).body(GetReportResponse.from(result));
+        return ResponseEntity.status(201).body(CommonResponse.of(201, GetReportResponse.from(result)));
     }
 }

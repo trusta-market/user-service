@@ -7,6 +7,7 @@ import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.walle
 import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -22,12 +23,12 @@ public class WalletAdapter implements WalletPort {
     public boolean createWallet(KeycloakId keycloakId) {
         log.info("Requesting wallet creation for keycloakId: {}", keycloakId.value());
         try {
-            WalletCreateResponse response = walletFeignClient.createWallet(
-                    new WalletCreateRequest(UUID.fromString(keycloakId.value())));
-            if (response.isSuccess()) {
+            ResponseEntity<WalletCreateResponse> response =
+                    walletFeignClient.createWallet(new WalletCreateRequest(UUID.fromString(keycloakId.value())));
+            if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("Successfully completed wallet creation for keycloakId: {}", keycloakId.value());
             }
-            return response.isSuccess();
+            return response.getStatusCode().is2xxSuccessful();
         } catch (FeignException e) {
             if (e.status() == 400 || e.status() == 409) {
                 log.info("Wallet already exists for keycloakId: {}", keycloakId.value());

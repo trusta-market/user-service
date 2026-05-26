@@ -3,6 +3,7 @@ package com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wall
 import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateRequest;
 import com.trusta_market.userservice.user.infrastructure.adapter.out.feign.wallet.dto.WalletCreateResponse;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -12,5 +13,5 @@ public interface WalletFeignClient {
 
     // 내부 서버 간 통신을 통한 지갑 생성 API (성공 여부 반환)
     @PostMapping("/internal/v1/wallets")
-    WalletCreateResponse createWallet(@RequestBody WalletCreateRequest request);
+    ResponseEntity<WalletCreateResponse> createWallet(@RequestBody WalletCreateRequest request);
 }
