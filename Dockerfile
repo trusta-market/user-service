@@ -1,21 +1,27 @@
 # ──────────────────────────────────────────────────────────────
 # Builder — Gradle 로 bootJar 생성. GitHub Packages 의 trusta common 의존성 fetch 위해
-# GPR_USER / GPR_TOKEN 을 build-arg 로 받음. workflow 의 docker build --build-arg 로 주입.
+# GPR_USER / GPR_TOKEN 을 BuildKit secret 으로 주입 (ARG 사용 시 레이어 캐시에 잔존하는 문제 방지)
+# workflow: docker build --secret id=gpr_user,env=GPR_USER --secret id=gpr_token,env=GPR_TOKEN
 # ──────────────────────────────────────────────────────────────
 FROM gradle:8.10-jdk21-alpine AS builder
 WORKDIR /workspace
 
-ARG GPR_USER
-ARG GPR_TOKEN
-
 COPY settings.gradle build.gradle ./
 COPY gradle ./gradle
-# ARG 는 RUN 내에서 환경변수로 접근 가능 (ENV 로 박으면 layer 에 잔존하므로 ENV 사용 X).
-RUN GPR_USER="$GPR_USER" GPR_TOKEN="$GPR_TOKEN" gradle dependencies --no-daemon
+
+RUN --mount=type=secret,id=gpr_user \
+    --mount=type=secret,id=gpr_token \
+    GPR_USER=$(cat /run/secrets/gpr_user) \
+    GPR_TOKEN=$(cat /run/secrets/gpr_token) \
+    gradle dependencies --no-daemon
 
 COPY src ./src
 
-RUN GPR_USER="$GPR_USER" GPR_TOKEN="$GPR_TOKEN" gradle bootJar --no-daemon \
+RUN --mount=type=secret,id=gpr_user \
+    --mount=type=secret,id=gpr_token \
+    GPR_USER=$(cat /run/secrets/gpr_user) \
+    GPR_TOKEN=$(cat /run/secrets/gpr_token) \
+    gradle bootJar --no-daemon \
  && cp build/libs/*.jar /workspace/app.jar
 
 # ──────────────────────────────────────────────────────────────
