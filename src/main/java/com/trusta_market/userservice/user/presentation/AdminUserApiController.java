@@ -10,8 +10,6 @@ import com.trusta_market.userservice.user.presentation.dto.request.PostUserRejec
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserSuspendRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
 import com.trustamarket.common.response.CommonResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +20,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Admin · User", description = "관리자 전용 유저 관리 API (ADMIN role 필요)")
 public class AdminUserApiController {
 
     private final UserUseCase userUseCase;
@@ -35,7 +32,6 @@ public class AdminUserApiController {
     }
 
     // 유저 목록 페이징 조회 API
-    @Operation(summary = "유저 목록 페이징 조회", description = "status / role 필터로 유저 페이지 조회")
     @GetMapping
     public ResponseEntity<CommonResponse<DomainPage<GetUserResponse>>> getUserList(
             @RequestParam(defaultValue = "0") Integer page,
@@ -70,7 +66,6 @@ public class AdminUserApiController {
     }
 
     // 유저 역할 변경 API (MEMBER ↔ INSPECTOR)
-    @Operation(summary = "유저 역할 변경", description = "MEMBER ↔ INSPECTOR. ADMIN 으로 승격은 가능, ADMIN 강등은 불가")
     @PatchMapping("/{userId}/role")
     public ResponseEntity<CommonResponse<GetUserResponse>> changeUserRole(@PathVariable UUID userId,
                                                           @RequestBody ChangeRoleRequest request) {

@@ -59,8 +59,6 @@ trusta:
     client-id: ${KEYCLOAK_CLIENT_ID:admin-cli}
     username: ${KEYCLOAK_USERNAME:admin}
     password: ${KEYCLOAK_PASSWORD:admin}
-  swagger:
-    expose-public: ${TRUSTA_SWAGGER_EXPOSE_PUBLIC:true}
 
 eureka:
   client:
