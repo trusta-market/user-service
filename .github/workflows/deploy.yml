@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: read
       id-token: write
     env:
       IMAGE: asia-northeast3-docker.pkg.dev/trusta-market-id/trusta-registry-services/user-service
@@ -29,27 +30,25 @@ jobs:
       - name: Configure Docker auth
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
 
-      # 임시 진단: GPR_TOKEN이 GitHub Packages 인증에 유효한지 확인 (상태코드만 출력)
+      # 임시 진단: GITHUB_TOKEN이 패키지 접근 가능한지 확인
       - name: Verify GitHub Packages credentials
         env:
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          GPR_USER: ${{ github.actor }}
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "GPR_USER length: ${#GPR_USER}"
-          echo "GPR_TOKEN length: ${#GPR_TOKEN}"
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
             -u "$GPR_USER:$GPR_TOKEN" \
             https://maven.pkg.github.com/trusta-market/common/com/trustamarket/common/0.3.0-SNAPSHOT/maven-metadata.xml)
           echo "GitHub Packages response: $STATUS"
           if [ "$STATUS" != "200" ]; then
-            echo "::error::Token authentication failed (status=$STATUS). Check token scopes and expiration."
+            echo "::error::Token authentication failed (status=$STATUS). 패키지 페이지에서 이 레포에 access 권한 부여 필요."
             exit 1
           fi
 
       - name: Build Docker image
         env:
-          GPR_USER: ${{ secrets.GPR_USER }}
-          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+          GPR_USER: ${{ github.actor }}
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker build \
             --secret id=gpr_user,env=GPR_USER \
