@@ -29,10 +29,14 @@ jobs:
       - name: Configure Docker auth
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
 
-      # run: | 블록을 사용해 멀티라인 파서 위에서 순수 한 줄로 실행되도록 안전 보강했습니다.
       - name: Build Docker image
         run: |
-          docker build --build-arg GPR_USER=${{ secrets.GPR_USER }} --build-arg GPR_TOKEN=${{ secrets.GPR_TOKEN }} -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+          docker build \
+            --build-arg GPR_USER="${{ secrets.GPR_USER }}" \
+            --build-arg GPR_TOKEN="${{ secrets.GPR_TOKEN }}" \
+            -t "$IMAGE:${{ github.sha }}" \
+            -t "$IMAGE:latest" \
+            .
 
       - name: Push image
         run: docker push --all-tags $IMAGE

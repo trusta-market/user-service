@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7
-
 # ──────────────────────────────────────────────────────────────
 # Builder — Gradle 로 bootJar 생성. GitHub Packages 의 trusta common 의존성 fetch 위해
 # GPR_USER / GPR_TOKEN 을 build-arg 로 받음. workflow 의 docker build --build-arg 로 주입.
