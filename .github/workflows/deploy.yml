@@ -29,12 +29,10 @@ jobs:
       - name: Configure Docker auth
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
 
+      # [수정완료] 줄바꿈 기호(\) 뒤의 공백으로 인한 인자 누락 오류를 원천 차단하기 위해 한 줄로 통합했습니다.
+      # 맨 끝에 대상 경로인 점(.)이 완벽하게 포함되어 빌드가 수행됩니다.
       - name: Build Docker image
-        run: |
-          docker build \
-            --build-arg GPR_USER=${{ secrets.GPR_USER }} \
-            --build-arg GPR_TOKEN=${{ secrets.GPR_TOKEN }} \
-            -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+        run: docker build --build-arg GPR_USER=${{ secrets.GPR_USER }} --build-arg GPR_TOKEN=${{ secrets.GPR_TOKEN }} -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
 
       - name: Push image
         run: docker push --all-tags $IMAGE
