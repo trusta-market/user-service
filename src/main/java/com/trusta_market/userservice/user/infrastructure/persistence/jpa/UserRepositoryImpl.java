@@ -7,6 +7,7 @@ import com.trusta_market.userservice.user.application.port.out.UserRepository;
 import com.trusta_market.userservice.common.pagination.DomainPage;
 import com.trusta_market.userservice.common.pagination.DomainPageRequest;
 import com.trusta_market.userservice.user.domain.vo.Email;
+import com.trusta_market.userservice.user.domain.vo.Name;
 import com.trusta_market.userservice.user.domain.vo.UserId;
 import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -60,10 +61,22 @@ public class UserRepositoryImpl implements UserRepository {
         return userJpaRepository.findByEmailAndDeletedAtIsNull(email);
     }
 
+    // 이름(닉네임) VO를 통해 유저 정보 조회
+    @Override
+    public Optional<User> findByName(Name name) {
+        return userJpaRepository.findByNameAndDeletedAtIsNull(name);
+    }
+
     // 동일한 이메일을 가진 유저 존재 여부 확인
     @Override
     public boolean existsByEmail(Email email) {
         return userJpaRepository.existsByEmailAndDeletedAtIsNull(email);
+    }
+
+    // 동일한 이름(닉네임)을 가진 유저 존재 여부 확인
+    @Override
+    public boolean existsByName(Name name) {
+        return userJpaRepository.existsByNameAndDeletedAtIsNull(name);
     }
 
     // 활성화된 전체 유저 목록 페이징 조회

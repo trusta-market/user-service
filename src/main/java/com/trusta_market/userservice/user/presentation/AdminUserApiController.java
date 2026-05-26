@@ -9,7 +9,6 @@ import com.trusta_market.userservice.user.presentation.dto.request.ChangeRoleReq
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserRejectRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostUserSuspendRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetUserResponse;
-import com.trustamarket.common.response.CommonResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,43 +32,57 @@ public class AdminUserApiController {
 
     // 유저 목록 페이징 조회 API
     @GetMapping
-    public ResponseEntity<CommonResponse<DomainPage<GetUserResponse>>> getUserList(
+    public ResponseEntity<DomainPage<GetUserResponse>> getUserList(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) UserStatus userStatus,
             @RequestParam(required = false) Role role) {
-        var result = userUseCase.getUserPage(page, size, userStatus, role).map(GetUserResponse::from);
-        return ResponseEntity.ok(CommonResponse.of(200, result));
+        var results = userUseCase.getUserPage(page, size, userStatus, role);
+        return ResponseEntity.ok(results.map(GetUserResponse::from));
     }
 
     // 유저 상세 정보 조회 API (추가)
     @GetMapping("/{userId}")
-    public ResponseEntity<CommonResponse<GetUserResponse>> getUserDetail(@PathVariable UUID userId) {
+    public ResponseEntity<GetUserResponse> getUserDetail(@PathVariable UUID userId) {
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
+        return ResponseEntity.ok(GetUserResponse.from(result));
+    }
+
+    // 유저 가입 승인 API
+    @PatchMapping("/{userId}/approve")
+    public ResponseEntity<GetUserResponse> approveUser(@PathVariable UUID userId) {
+        var result = userUseCase.approveUser(userId);
+        return ResponseEntity.ok(GetUserResponse.from(result));
+    }
+
+    // 유저 가입 거절 API
+    @PostMapping("/{userId}/reject")
+    public ResponseEntity<GetUserResponse> rejectUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
+        var result = userUseCase.rejectUser(userId, request.reason());
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
     // 유저 활동 정지 API
     @PostMapping("/{userId}/suspend")
-    public ResponseEntity<CommonResponse<GetUserResponse>> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
+    public ResponseEntity<GetUserResponse> suspendUser(@PathVariable UUID userId, @RequestBody PostUserSuspendRequest request) {
         suspensionUseCase.suspendUser(userId, request.reason(), request.expiresAt());
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
     // 유저 활동 정지 해제 API
     @PatchMapping("/{userId}/unsuspend")
-    public ResponseEntity<CommonResponse<GetUserResponse>> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
+    public ResponseEntity<GetUserResponse> unsuspendUser(@PathVariable UUID userId, @RequestBody PostUserRejectRequest request) {
         suspensionUseCase.unsuspendUser(userId, request.reason());
         var result = userUseCase.getUser(userId);
-        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 
     // 유저 역할 변경 API (MEMBER ↔ INSPECTOR)
     @PatchMapping("/{userId}/role")
-    public ResponseEntity<CommonResponse<GetUserResponse>> changeUserRole(@PathVariable UUID userId,
+    public ResponseEntity<GetUserResponse> changeUserRole(@PathVariable UUID userId,
                                                           @RequestBody ChangeRoleRequest request) {
         var result = userUseCase.changeUserRole(userId, request.role());
-        return ResponseEntity.ok(CommonResponse.of(200, GetUserResponse.from(result)));
+        return ResponseEntity.ok(GetUserResponse.from(result));
     }
 }

@@ -5,7 +5,6 @@ import com.trusta_market.userservice.account.application.port.in.AccountUseCase;
 import com.trusta_market.userservice.account.presentation.dto.request.PostAccountRequest;
 import com.trusta_market.userservice.account.presentation.dto.response.GetAccountResponse;
 import com.trusta_market.userservice.user.infrastructure.security.SecurityUtil;
-import com.trustamarket.common.response.CommonResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,7 +24,7 @@ public class AccountApiController {
 
     // 내 계좌 등록 API
     @PostMapping
-    public ResponseEntity<CommonResponse<GetAccountResponse>> createAccount(@RequestBody PostAccountRequest request) {
+    public ResponseEntity<GetAccountResponse> createAccount(@RequestBody PostAccountRequest request) {
         UUID userId = SecurityUtil.getCurrentUserId()
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
 
@@ -36,29 +35,29 @@ public class AccountApiController {
                 request.accountHolder(),
                 request.accountType()));
 
-        return ResponseEntity.status(201).body(CommonResponse.of(201, GetAccountResponse.from(result)));
+        return ResponseEntity.status(201).body(GetAccountResponse.from(result));
     }
 
     // 내 계좌 목록 조회 API
     @GetMapping
-    public ResponseEntity<CommonResponse<List<GetAccountResponse>>> getMyAccounts() {
+    public ResponseEntity<List<GetAccountResponse>> getMyAccounts() {
         UUID userId = SecurityUtil.getCurrentUserId()
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
 
-        var result = accountUseCase.getAccountList(userId).stream()
+        var results = accountUseCase.getAccountList(userId);
+        return ResponseEntity.ok(results.stream()
                 .map(GetAccountResponse::from)
-                .toList();
-        return ResponseEntity.ok(CommonResponse.of(200, result));
+                .toList());
     }
 
     // 기본 계좌 조회 API
     @GetMapping("/default")
-    public ResponseEntity<CommonResponse<GetAccountResponse>> getDefaultAccount() {
+    public ResponseEntity<GetAccountResponse> getDefaultAccount() {
         UUID userId = SecurityUtil.getCurrentUserId()
                 .orElseThrow(() -> new RuntimeException("인증 정보가 없습니다."));
 
         var result = accountUseCase.getDefaultAccount(userId);
-        return ResponseEntity.ok(CommonResponse.of(200, GetAccountResponse.from(result)));
+        return ResponseEntity.ok(GetAccountResponse.from(result));
     }
 
     // 대표 계좌 설정 변경 API

@@ -6,7 +6,6 @@ import com.trusta_market.userservice.user.application.port.in.UserUseCase;
 import com.trusta_market.userservice.user.presentation.dto.request.PatchAddressRequest;
 import com.trusta_market.userservice.user.presentation.dto.request.PostAddressRequest;
 import com.trusta_market.userservice.user.presentation.dto.response.GetAddressResponse;
-import com.trustamarket.common.response.CommonResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,29 +26,28 @@ public class AddressApiController {
 
     // 유저의 배송지 목록 조회 API
     @GetMapping("/{userId}")
-    public ResponseEntity<CommonResponse<List<GetAddressResponse>>> getAddressList(@PathVariable UUID userId) {
-        var result = userUseCase.getAddressList(userId).stream()
+    public ResponseEntity<List<GetAddressResponse>> getAddressList(@PathVariable UUID userId) {
+        return ResponseEntity.ok(userUseCase.getAddressList(userId).stream()
                 .map(GetAddressResponse::from)
-                .toList();
-        return ResponseEntity.ok(CommonResponse.of(200, result));
+                .toList());
     }
 
     // 신규 배송지 등록 API
     @PostMapping("/{userId}")
-    public ResponseEntity<CommonResponse<GetAddressResponse>> createAddress(@PathVariable UUID userId, @Valid @RequestBody PostAddressRequest request) {
+    public ResponseEntity<GetAddressResponse> createAddress(@PathVariable UUID userId, @Valid @RequestBody PostAddressRequest request) {
         var result = userUseCase.createAddress(new CreateAddressCommand(
                 userId, request.recipientName(), request.recipientPhone(),
                 request.zipCode(), request.address(), request.addressDetail()));
-        return ResponseEntity.status(201).body(CommonResponse.of(201, GetAddressResponse.from(result)));
+        return ResponseEntity.status(201).body(GetAddressResponse.from(result));
     }
 
     // 기존 배송지 수정 API
     @PatchMapping("/{userId}/{addressId}")
-    public ResponseEntity<CommonResponse<GetAddressResponse>> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @RequestBody PatchAddressRequest request) {
+    public ResponseEntity<GetAddressResponse> updateAddress(@PathVariable UUID userId, @PathVariable UUID addressId, @RequestBody PatchAddressRequest request) {
         var result = userUseCase.updateAddress(userId, addressId, new UpdateAddressCommand(
                 request.recipientName(), request.recipientPhone(), request.zipCode(),
                 request.address(), request.addressDetail()));
-        return ResponseEntity.ok(CommonResponse.of(200, GetAddressResponse.from(result)));
+        return ResponseEntity.ok(GetAddressResponse.from(result));
     }
 
     // 배송지 삭제 API
