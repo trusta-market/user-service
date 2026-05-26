@@ -29,6 +29,23 @@ jobs:
       - name: Configure Docker auth
         run: gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
 
+      # 임시 진단: GPR_TOKEN이 GitHub Packages 인증에 유효한지 확인 (상태코드만 출력)
+      - name: Verify GitHub Packages credentials
+        env:
+          GPR_USER: ${{ secrets.GPR_USER }}
+          GPR_TOKEN: ${{ secrets.GPR_TOKEN }}
+        run: |
+          echo "GPR_USER length: ${#GPR_USER}"
+          echo "GPR_TOKEN length: ${#GPR_TOKEN}"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -u "$GPR_USER:$GPR_TOKEN" \
+            https://maven.pkg.github.com/trusta-market/common/com/trustamarket/common/0.3.0-SNAPSHOT/maven-metadata.xml)
+          echo "GitHub Packages response: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::Token authentication failed (status=$STATUS). Check token scopes and expiration."
+            exit 1
+          fi
+
       - name: Build Docker image
         env:
           GPR_USER: ${{ secrets.GPR_USER }}
