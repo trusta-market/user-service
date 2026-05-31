@@ -154,6 +154,10 @@ public class User extends BaseUserEntity {
         this.role = newRole;
     }
 
+    public void updateMembership(Membership newMembership) {
+        this.membership = newMembership;
+    }
+
     private void checkNotWithdrawn() {
         if (isDeleted()) {
             throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);

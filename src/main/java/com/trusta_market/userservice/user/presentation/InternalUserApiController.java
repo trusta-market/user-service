@@ -2,6 +2,7 @@ package com.trusta_market.userservice.user.presentation;
 
 import com.trusta_market.userservice.membership.application.port.in.MembershipUseCase;
 import com.trusta_market.userservice.user.application.port.in.UserUseCase;
+import com.trusta_market.userservice.user.presentation.dto.response.internal.MembershipFeeRateResponse;
 import com.trusta_market.userservice.user.presentation.dto.response.internal.MembershipInternalResponse;
 import com.trusta_market.userservice.user.presentation.dto.response.internal.UserInternalResponse;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +46,12 @@ public class InternalUserApiController {
     public ResponseEntity<MembershipInternalResponse> getMembership(@PathVariable UUID userId) {
         var result = membershipUseCase.getMembership(userId);
         return ResponseEntity.ok(MembershipInternalResponse.from(result));
+    }
+
+    // 유저 멤버십 수수료율 조회 (Order Service에서 결제 처리 시 사용)
+    @GetMapping("/{userId}/membership/fee-rate")
+    public ResponseEntity<MembershipFeeRateResponse> getMembershipFeeRate(@PathVariable UUID userId) {
+        var result = membershipUseCase.getFeeRate(userId);
+        return ResponseEntity.ok(MembershipFeeRateResponse.from(result));
     }
 }
