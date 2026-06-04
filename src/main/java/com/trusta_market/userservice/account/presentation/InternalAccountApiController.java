@@ -29,7 +29,7 @@ public class InternalAccountApiController {
      * @return 인증된 기본 계좌 정보
      */
     @GetMapping("/verified-default/{userId}")
-    public ResponseEntity<AccountResult> getVerifiedDefaultAccount(@PathVariable UUID userId) {
-        return ResponseEntity.ok(accountUseCase.getVerifiedDefaultAccount(userId));
+    public ResponseEntity<CommonResponse<AccountResult>> getVerifiedDefaultAccount(@PathVariable UUID userId) {
+        return ResponseEntity.ok(new CommonResponse<>(HttpStatus.OK.value(), accountUseCase.getVerifiedDefaultAccount(userId)));
     }
 }
