@@ -1,6 +1,6 @@
 package com.trusta_market.userservice.membership.infrastructure.kafka;
 
-import com.trusta_market.userservice.membership.infrastructure.kafka.dto.OrderConfirmedEvent;
+import com.trustamarket.common.event.OrderConfirmedEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;

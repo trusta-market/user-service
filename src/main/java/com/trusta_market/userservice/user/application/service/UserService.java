@@ -60,6 +60,7 @@ public class UserService implements UserUseCase, UserValidationUseCase {
         Name name = command.name();
         
         KeycloakId keycloakId = identityProviderPort.createIdentity(email, command.password(), name);
+        identityProviderPort.assignRole(keycloakId, Role.MEMBER);
 
         User user = User.create(keycloakId, email, name);
         User savedUser = userRepository.save(user);

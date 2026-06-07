@@ -4,7 +4,7 @@ import com.trusta_market.userservice.user.application.port.out.UserMembershipPoi
 import com.trusta_market.userservice.user.domain.entity.UserMembershipPointHistory;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,12 +23,12 @@ public class UserMembershipPointHistoryRepositoryImpl implements UserMembershipP
     }
 
     @Override
-    public int sumEarnedPointsSince(UUID userId, LocalDateTime since) {
+    public int sumEarnedPointsSince(UUID userId, Instant since) {
         return jpaRepository.sumEarnedPointsSince(userId, since);
     }
 
     @Override
-    public List<UUID> findUserIdsWithExpiringPoints(LocalDateTime from, LocalDateTime to) {
+    public List<UUID> findUserIdsWithExpiringPoints(Instant from, Instant to) {
         return jpaRepository.findDistinctUserIdsByCreatedAtBetween(from, to);
     }
 }

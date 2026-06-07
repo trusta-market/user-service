@@ -7,12 +7,22 @@ import java.util.UUID;
 
 public record MembershipResult(
         UUID userId,
-        Membership membership
+        Membership membership,
+        int rollingPoints
 ) {
     public static MembershipResult from(User user) {
         return new MembershipResult(
                 user.getUserId().value(),
-                user.getMembership()
+                user.getMembership(),
+                0
+        );
+    }
+
+    public static MembershipResult of(User user, int rollingPoints) {
+        return new MembershipResult(
+                user.getUserId().value(),
+                user.getMembership(),
+                rollingPoints
         );
     }
 }

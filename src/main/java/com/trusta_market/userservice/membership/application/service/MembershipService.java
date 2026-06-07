@@ -13,6 +13,7 @@ import com.trusta_market.userservice.user.domain.entity.UserMembershipHistory;
 import com.trusta_market.userservice.user.domain.entity.UserMembershipPointHistory;
 import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import com.trusta_market.userservice.user.domain.exception.UserException;
+import com.trusta_market.userservice.user.domain.vo.KeycloakId;
 import com.trusta_market.userservice.user.domain.vo.Membership;
 import com.trusta_market.userservice.user.domain.vo.PointRole;
 import com.trusta_market.userservice.user.domain.vo.UserId;
@@ -21,7 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Slf4j
@@ -37,8 +39,11 @@ public class MembershipService implements MembershipUseCase, MembershipPointUseC
 
     @Override
     @Transactional(readOnly = true)
-    public MembershipResult getMembership(UUID userId) {
-        return MembershipResult.from(findActiveUser(userId));
+    public MembershipResult getMembership(UUID keycloakId) {
+        User user = findActiveUser(keycloakId);
+        Instant since = Instant.now().minus(90, ChronoUnit.DAYS);
+        int rollingPoints = pointHistoryRepository.sumEarnedPointsSince(user.getUserId().value(), since);
+        return MembershipResult.of(user, rollingPoints);
     }
 
     @Override
@@ -63,14 +68,19 @@ public class MembershipService implements MembershipUseCase, MembershipPointUseC
      * findByIdWithLock 으로 비관적 락을 걸어 동시 이벤트로 인한 등급 충돌을 방지합니다.
      */
     @Transactional
-    public void grantPointsAndRecalculate(UUID userId, UUID orderId, PointRole role, int points) {
+    public void grantPointsAndRecalculate(UUID keycloakId, UUID orderId, PointRole role, int points) {
+        // Keycloak ID → user-service UUID 매핑
+        User user = userRepository.findByKeycloakId(KeycloakId.of(keycloakId.toString()))
+                .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
+        UUID userId = user.getUserId().value();
+
         // 1. 포인트 이력 저장 (orderId + role 유니크 제약으로 중복 이벤트 멱등 처리)
         UserMembershipPointHistory history =
                 UserMembershipPointHistory.create(userId, orderId, role, points);
         pointHistoryRepository.save(history);
 
         // 2. 최근 3개월 롤링 포인트 합산
-        LocalDateTime since = LocalDateTime.now().minusMonths(3);
+        Instant since = Instant.now().minus(90, ChronoUnit.DAYS);
         int rollingPoints = pointHistoryRepository.sumEarnedPointsSince(userId, since);
 
         // 3. 등급 재계산 및 변동 시 업데이트
@@ -82,7 +92,7 @@ public class MembershipService implements MembershipUseCase, MembershipPointUseC
      */
     @Transactional
     public void recalculateGradeByScheduler(UUID userId) {
-        LocalDateTime since = LocalDateTime.now().minusMonths(3);
+        Instant since = Instant.now().minus(90, ChronoUnit.DAYS);
         int rollingPoints = pointHistoryRepository.sumEarnedPointsSince(userId, since);
         recalculateGrade(userId, rollingPoints);
     }
@@ -112,8 +122,8 @@ public class MembershipService implements MembershipUseCase, MembershipPointUseC
                 userId, current, calculated, rollingPoints);
     }
 
-    private User findActiveUser(UUID userId) {
-        User user = userRepository.findById(UserId.of(userId))
+    private User findActiveUser(UUID keycloakId) {
+        User user = userRepository.findByKeycloakId(KeycloakId.of(keycloakId.toString()))
                 .orElseThrow(() -> new UserException(UserErrorCode.USER_NOT_FOUND));
         if (user.isDeleted()) {
             throw new UserException(UserErrorCode.ALREADY_WITHDRAWN);

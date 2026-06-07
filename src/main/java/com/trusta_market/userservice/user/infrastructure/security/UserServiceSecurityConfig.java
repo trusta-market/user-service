@@ -38,16 +38,27 @@ public class UserServiceSecurityConfig {
         return registration;
     }
 
+    // /internal/** — 서비스 간 Feign 호출용. JWT 검증 없이 허용 (Gateway가 외부 차단).
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain internalSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/internal/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE + 1)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/v1/**", "/internal/**", "/swagger-ui/**", "/v3/api-docs/**")
+                .securityMatcher("/api/v1/**", "/swagger-ui/**", "/v3/api-docs/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/users/signup").permitAll()
-                        .requestMatchers("/internal/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

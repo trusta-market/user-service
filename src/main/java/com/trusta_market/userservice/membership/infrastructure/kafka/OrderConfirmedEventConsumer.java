@@ -1,7 +1,7 @@
 package com.trusta_market.userservice.membership.infrastructure.kafka;
 
 import com.trusta_market.userservice.membership.application.port.in.MembershipPointUseCase;
-import com.trusta_market.userservice.membership.infrastructure.kafka.dto.OrderConfirmedEvent;
+import com.trustamarket.common.event.OrderConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
