@@ -5,7 +5,7 @@ import com.trusta_market.userservice.user.domain.exception.UserErrorCode;
 import java.util.regex.Pattern;
 
 public record Name(String value) {
-    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣\\s]+$");
+    private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣0-9\\s\\-]+$");
 
     public Name {
         value = value != null ? value.trim() : null;

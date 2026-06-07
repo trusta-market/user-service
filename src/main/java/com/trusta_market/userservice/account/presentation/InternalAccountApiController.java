@@ -2,7 +2,9 @@ package com.trusta_market.userservice.account.presentation;
 
 import com.trusta_market.userservice.account.application.dto.result.AccountResult;
 import com.trusta_market.userservice.account.application.port.in.AccountUseCase;
+import com.trustamarket.common.response.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +31,7 @@ public class InternalAccountApiController {
      * @return 인증된 기본 계좌 정보
      */
     @GetMapping("/verified-default/{userId}")
-    public ResponseEntity<AccountResult> getVerifiedDefaultAccount(@PathVariable UUID userId) {
-        return ResponseEntity.ok(accountUseCase.getVerifiedDefaultAccount(userId));
+    public ResponseEntity<CommonResponse<AccountResult>> getVerifiedDefaultAccount(@PathVariable UUID userId) {
+        return ResponseEntity.ok(new CommonResponse<>(HttpStatus.OK.value(), accountUseCase.getVerifiedDefaultAccount(userId)));
     }
 }
